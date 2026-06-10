@@ -1,0 +1,231 @@
+/* Feed Manager Panel Styles - Extracted from admin_desktop.html */
+
+.panel {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.panel-head {
+  padding: 11px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.panel-action {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--mono);
+  transition: opacity 0.15s;
+}
+
+.panel-action:hover {
+  opacity: 0.7;
+}
+
+/* Feed list container */
+.feed-list {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* Feed rows */
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  font-size: 12px;
+  transition: background 0.12s;
+}
+
+.feed-row:last-child {
+  border-bottom: none;
+}
+
+.feed-row:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+/* Status dot */
+.fdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fdot.ok {
+  background: var(--green);
+}
+
+.fdot.fail {
+  background: var(--red);
+}
+
+.fdot.pend {
+  background: var(--yellow);
+  animation: pulse 1.5s ease infinite;
+}
+
+/* Feed URL */
+.furl {
+  color: rgba(255,255,255,0.55);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-family: var(--mono);
+  min-width: 0; /* Allow shrinking */
+}
+
+/* Category tag */
+.ftag {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 0.5px solid var(--accent-border);
+  white-space: nowrap;
+  font-family: var(--mono);
+  flex-shrink: 0;
+}
+
+/* Episode count */
+.feps {
+  color: var(--text-dim);
+  font-size: 10px;
+  min-width: 52px;
+  text-align: right;
+  font-family: var(--mono);
+  flex-shrink: 0;
+}
+
+/* Action buttons */
+.fbtns {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ficon {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  background: none;
+  transition: all 0.12s;
+}
+
+.ficon:hover {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+}
+
+.ficon.retry {
+  border-color: rgba(239,159,39,0.25);
+  color: var(--yellow);
+}
+
+.ficon.retry:hover {
+  background: var(--yellow-dim);
+}
+
+.ficon.del {
+  border-color: rgba(226,75,74,0.2);
+  color: var(--red);
+}
+
+.ficon.del:hover {
+  background: var(--red-dim);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+  .panel {
+    border-radius: 14px;
+  }
+  
+  .panel-head {
+    padding: 10px 14px;
+  }
+  
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+  
+  .feed-list {
+    max-height: none; /* Remove height limit on mobile */
+  }
+  
+  .feed-row {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  
+  .furl {
+    font-size: 11px;
+  }
+  
+  /* Hide episode count on mobile to save space */
+  .feps {
+    display: none;
+  }
+  
+  .fbtns {
+    gap: 5px;
+  }
+  
+  .ficon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel-head {
+    padding: 10px 12px;
+  }
+  
+  .feed-row {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  
+  .ftag {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+  
+  .ficon {
+    width: 26px;
+    height: 26px;
+  }
+}

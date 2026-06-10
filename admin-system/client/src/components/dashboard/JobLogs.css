@@ -1,0 +1,135 @@
+/* Job Logs Panel Styles - Extracted from admin_desktop.html */
+
+.log-list {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  font-size: 11px;
+  transition: background 0.12s;
+}
+
+.log-row:last-child {
+  border-bottom: none;
+}
+
+.log-row:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+/* Status badge */
+.lstatus {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+  min-width: 58px;
+  text-align: center;
+  white-space: nowrap;
+  font-family: var(--mono);
+}
+
+.lstatus.s {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.lstatus.e {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+.lstatus.r {
+  background: var(--purple-dim);
+  color: var(--purple);
+}
+
+/* Job name */
+.lname {
+  color: rgba(255,255,255,0.65);
+  flex: 1;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* Episodes */
+.leps {
+  color: var(--text-dim);
+  font-size: 10px;
+  min-width: 100px;
+  text-align: right;
+  font-family: var(--mono);
+}
+
+/* Time */
+.ltime {
+  color: var(--text-dim);
+  font-size: 10px;
+  min-width: 58px;
+  text-align: right;
+  font-family: var(--mono);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+  .log-list {
+    max-height: none;
+  }
+  
+  .log-row {
+    padding: 9px 14px;
+    gap: 8px;
+  }
+  
+  .lstatus {
+    font-size: 9px;
+    padding: 2px 6px;
+    min-width: auto;
+  }
+  
+  .lname {
+    font-size: 11px;
+  }
+  
+  /* Hide episode count on mobile */
+  .leps {
+    display: none;
+  }
+  
+  .ltime {
+    font-size: 10px;
+    min-width: auto;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .log-row {
+    padding: 9px 12px;
+    gap: 6px;
+  }
+  
+  .lstatus {
+    font-size: 8px;
+    padding: 2px 5px;
+  }
+  
+  .lname {
+    font-size: 10px;
+  }
+  
+  .ltime {
+    font-size: 9px;
+  }
+}

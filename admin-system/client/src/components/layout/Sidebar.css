@@ -1,0 +1,134 @@
+/* Sidebar Styles - Extracted from admin_desktop.html */
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  border-right: 0.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* Logo Section */
+.logo-wrap {
+  padding: 20px 18px 16px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.logo {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.logo span {
+  color: var(--accent);
+}
+
+.logo-role {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  font-family: var(--mono);
+  letter-spacing: 0.05em;
+}
+
+/* Navigation Sections */
+.nav-section {
+  padding: 14px 0;
+}
+
+.nav-label {
+  font-size: 9.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  padding: 0 18px 8px;
+  text-transform: uppercase;
+  font-family: var(--mono);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.38);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.nav-item i {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.nav-item:hover {
+  color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.03);
+}
+
+.nav-item.active {
+  color: #fff;
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+}
+
+.nav-badge {
+  margin-left: auto;
+  font-size: 10px;
+  background: rgba(226,75,74,0.15);
+  color: var(--red);
+  padding: 2px 7px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-family: var(--mono);
+}
+
+/* User Profile */
+.sidebar-user {
+  margin-top: auto;
+  padding: 14px 18px;
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4A1B0C;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.user-email {
+  font-size: 10px;
+  color: rgba(255,255,255,0.28);
+  font-family: var(--mono);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE - HIDE SIDEBAR
+   ============================================ */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}

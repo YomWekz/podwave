@@ -1,0 +1,85 @@
+/* Toast Notification Styles - Extracted from admin_desktop.html */
+
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 999;
+}
+
+.toast {
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: toastIn 0.25s ease;
+  max-width: 280px;
+}
+
+.toast.success {
+  border-left: 2px solid var(--green);
+}
+
+.toast.error {
+  border-left: 2px solid var(--red);
+}
+
+.toast.info {
+  border-left: 2px solid var(--accent);
+}
+
+.toast i {
+  font-size: 14px;
+}
+
+.toast.success i {
+  color: var(--green);
+}
+
+.toast.error i {
+  color: var(--red);
+}
+
+.toast.info i {
+  color: var(--accent);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+  .toast-container {
+    left: 12px;
+    right: 12px;
+    bottom: calc(var(--bottom-nav-h) + 10px);
+  }
+  
+  .toast {
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+}
+
+@media (max-width: 480px) {
+  .toast-container {
+    left: 10px;
+    right: 10px;
+    bottom: calc(var(--bottom-nav-h) + 8px);
+    gap: 6px;
+  }
+  
+  .toast {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+}

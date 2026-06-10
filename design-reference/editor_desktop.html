@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PodWave — Editor Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #0f0f14;
+  --surface: #1a1a22;
+  --surface2: #1f1f28;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.04);
+  --text: #f0eee8;
+  --text-muted: rgba(255,255,255,0.35);
+  --text-dim: rgba(255,255,255,0.2);
+  --accent: #7F77DD;
+  --accent-dim: rgba(127,119,221,0.08);
+  --accent-light: #AFA9EC;
+  --green: #5DCAA5;
+  --green-dim: rgba(93,202,165,0.1);
+  --red: #E24B4A;
+  --red-dim: rgba(226,75,74,0.1);
+  --amber: #EF9F27;
+  --amber-dim: rgba(239,159,39,0.1);
+  --coral: #D85A30;
+  --font: 'Sora', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #09090d;
+  font-family: var(--font);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Layout */
+.ed { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; width: 100%; max-width: 1200px; min-height: 820px; }
+
+/* Sidebar */
+.sidebar { width: 210px; flex-shrink: 0; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; }
+.logo-wrap { padding: 20px 18px 16px; border-bottom: 0.5px solid var(--border); }
+.logo { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+.logo span { color: var(--accent); }
+.logo-role { font-size: 10px; color: var(--text-dim); margin-top: 2px; font-family: var(--mono); }
+.nav-section { padding: 14px 0; }
+.nav-section + .nav-section { padding-top: 0; }
+.nav-label { font-size: 9.5px; color: var(--text-dim); letter-spacing: 0.1em; padding: 0 18px 8px; text-transform: uppercase; font-family: var(--mono); }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 18px; font-size: 12.5px; color: rgba(255,255,255,0.38); cursor: pointer; border-left: 2px solid transparent; transition: all 0.15s; user-select: none; }
+.nav-item i { font-size: 16px; flex-shrink: 0; }
+.nav-item:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: #fff; background: var(--accent-dim); border-left-color: var(--accent); }
+.nav-badge { margin-left: auto; font-size: 10px; padding: 2px 7px; border-radius: 8px; font-weight: 500; font-family: var(--mono); }
+.nav-badge.purple { background: rgba(127,119,221,0.15); color: var(--accent-light); }
+.nav-badge.amber { background: var(--amber-dim); color: var(--amber); }
+.sidebar-user { margin-top: auto; padding: 14px 18px; border-top: 0.5px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #26215C; flex-shrink: 0; }
+.user-name { font-size: 12px; font-weight: 500; color: #fff; }
+.user-role { font-size: 10px; color: rgba(255,255,255,0.28); font-family: var(--mono); }
+
+/* Main */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 0.5px solid var(--border); }
+.topbar-title { font-size: 15px; font-weight: 500; color: #fff; }
+.topbar-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-family: var(--mono); }
+.notif-btn { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.28); cursor: pointer; padding: 5px 10px; border-radius: 6px; transition: all 0.15s; border: 0.5px solid transparent; font-family: var(--mono); }
+.notif-btn:hover { color: rgba(255,255,255,0.6); border-color: var(--border); }
+.notif-btn i { font-size: 14px; }
+.notif-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); margin-left: 2px; }
+
+/* Content */
+.content { flex: 1; padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+/* Pages */
+.page { display: none; flex-direction: column; gap: 16px; }
+.page.active { display: flex; }
+.placeholder-page { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 10px; padding: 60px; text-align: center; min-height: 400px; }
+.placeholder-page i { font-size: 36px; opacity: 0.3; }
+.placeholder-page h3 { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.4); }
+.placeholder-page p { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
+
+/* KPIs */
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.kpi { background: var(--surface); border-radius: var(--radius); padding: 14px 16px; border: 0.5px solid rgba(255,255,255,0.06); transition: border-color 0.2s; }
+.kpi:hover { border-color: rgba(255,255,255,0.12); }
+.kpi-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-family: var(--mono); }
+.kpi-val { font-size: 26px; font-weight: 500; line-height: 1; transition: all 0.3s; }
+.kpi-val.purple { color: var(--accent); }
+.kpi-val.amber { color: var(--amber); }
+.kpi-val.green { color: var(--green); }
+.kpi-val.white { color: #fff; }
+.kpi-change { font-size: 10px; color: var(--text-dim); margin-top: 5px; font-family: var(--mono); }
+
+/* Panel */
+.panel { background: var(--surface); border-radius: 10px; border: 0.5px solid rgba(255,255,255,0.06); overflow: hidden; }
+.panel-head { padding: 11px 16px; border-bottom: 0.5px solid var(--border2); display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-size: 11px; font-weight: 500; color: var(--text-muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.07em; }
+.panel-action { font-size: 11px; color: var(--accent); cursor: pointer; font-family: var(--mono); transition: opacity 0.15s; }
+.panel-action:hover { opacity: 0.7; }
+
+/* Queue rows */
+.qrow { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 0.5px solid var(--border2); transition: background 0.12s; }
+.qrow:last-child { border-bottom: none; }
+.qrow:hover { background: rgba(255,255,255,0.02); }
+.qrow.dismissed { opacity: 0; transform: translateX(12px); transition: all 0.3s ease; pointer-events: none; }
+.qart { width: 38px; height: 38px; border-radius: 7px; flex-shrink: 0; }
+.qa1 { background: #1D9E75; } .qa2 { background: #534AB7; } .qa3 { background: #993C1D; } .qa4 { background: #185FA5; }
+.qinfo { flex: 1; }
+.qtitle { font-size: 12px; font-weight: 500; color: #fff; }
+.qmeta { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 1px; font-family: var(--mono); }
+.qstatus { font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 500; white-space: nowrap; font-family: var(--mono); }
+.qstatus.pending { background: var(--amber-dim); color: var(--amber); }
+.qstatus.review { background: rgba(127,119,221,0.1); color: var(--accent-light); }
+.qstatus.approved { background: var(--green-dim); color: var(--green); }
+.qstatus.rejected { background: var(--red-dim); color: var(--red); }
+.qbtns { display: flex; gap: 5px; }
+.qbtn { font-size: 11px; padding: 5px 10px; border-radius: 6px; border: 0.5px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); cursor: pointer; background: none; display: flex; align-items: center; gap: 4px; font-family: var(--font); transition: all 0.12s; white-space: nowrap; }
+.qbtn:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
+.qbtn.approve { border-color: rgba(93,202,165,0.25); color: var(--green); }
+.qbtn.approve:hover { background: var(--green-dim); }
+.qbtn.reject { border-color: rgba(226,75,74,0.25); color: var(--red); }
+.qbtn.reject:hover { background: var(--red-dim); }
+.qbtn i { font-size: 12px; }
+
+/* Two col */
+.two-col { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px; }
+
+/* Highlights */
+.hl-item { padding: 12px 16px; border-bottom: 0.5px solid var(--border2); transition: background 0.12s; }
+.hl-item:last-child { border-bottom: none; }
+.hl-item:hover { background: rgba(255,255,255,0.015); }
+.hl-item.dismissed { opacity: 0; transform: translateX(12px); transition: all 0.3s ease; pointer-events: none; }
+.hl-row { display: flex; gap: 10px; align-items: flex-start; }
+.hl-icon { width: 30px; height: 30px; border-radius: 6px; background: rgba(127,119,221,0.12); display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+.hl-title { font-size: 12px; font-weight: 500; color: #fff; margin-bottom: 3px; }
+.hl-snippet { font-size: 11px; color: rgba(255,255,255,0.35); line-height: 1.5; margin-bottom: 8px; }
+.hl-bar { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; position: relative; margin-bottom: 6px; cursor: pointer; }
+.hl-clip { position: absolute; height: 3px; background: var(--accent); border-radius: 2px; transition: opacity 0.2s; }
+.hl-bar:hover .hl-clip { opacity: 0.7; }
+.hl-times { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.2); margin-bottom: 8px; font-family: var(--mono); }
+.hl-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* Trim modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px 22px; width: 440px; transform: translateY(8px); transition: transform 0.15s; }
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-title { font-size: 13px; font-weight: 500; color: #fff; margin-bottom: 4px; }
+.modal-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-family: var(--mono); }
+.trim-track { position: relative; height: 40px; background: rgba(255,255,255,0.04); border-radius: 6px; margin-bottom: 12px; overflow: hidden; cursor: pointer; }
+.trim-fill { position: absolute; top: 0; bottom: 0; background: rgba(127,119,221,0.25); border-left: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+.trim-times { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-family: var(--mono); }
+.trim-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.trim-field label { font-size: 10px; color: var(--text-dim); font-family: var(--mono); display: block; margin-bottom: 5px; }
+.trim-field input { width: 100%; background: var(--bg); border: 0.5px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 7px 10px; color: #fff; font-size: 12px; font-family: var(--mono); outline: none; transition: border-color 0.15s; }
+.trim-field input:focus { border-color: var(--accent); }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.modal-btn { font-family: var(--font); font-size: 12px; font-weight: 500; padding: 7px 14px; border-radius: var(--radius); border: 0.5px solid var(--border); cursor: pointer; transition: all 0.12s; }
+.modal-btn.cancel { background: none; color: var(--text-muted); }
+.modal-btn.cancel:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.modal-btn.save { background: var(--accent); border-color: var(--accent); color: #fff; }
+.modal-btn.save:hover { background: #6e66cc; }
+
+/* Tag modal */
+.tag-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.tag-chip { font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 0.5px solid var(--border); color: var(--text-muted); cursor: pointer; font-family: var(--mono); transition: all 0.12s; }
+.tag-chip:hover { border-color: var(--accent); color: var(--accent-light); }
+.tag-chip.selected { background: var(--accent-dim); border-color: var(--accent); color: var(--accent-light); }
+
+/* Collections */
+.col-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 0.5px solid var(--border2); transition: background 0.12s; }
+.col-item:last-child { border-bottom: none; }
+.col-item:hover { background: rgba(255,255,255,0.02); }
+.col-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.col-icon.c1 { background: var(--green-dim); color: var(--green); }
+.col-icon.c2 { background: var(--accent-dim); color: var(--accent); }
+.col-icon.c3 { background: rgba(216,90,48,0.12); color: var(--coral); }
+.col-title { font-size: 12px; font-weight: 500; color: #fff; }
+.col-meta { font-size: 10px; color: rgba(255,255,255,0.3); font-family: var(--mono); }
+.col-status { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-family: var(--mono); margin-left: 4px; }
+.col-status.pub { background: var(--green-dim); color: var(--green); }
+.col-status.draft { background: var(--amber-dim); color: var(--amber); }
+.col-edit { font-size: 13px; color: rgba(255,255,255,0.25); cursor: pointer; padding: 4px; border-radius: 4px; transition: all 0.12s; }
+.col-edit:hover { color: var(--accent); background: var(--accent-dim); }
+
+/* New collection form */
+.new-col-form { padding: 12px 16px; border-top: 0.5px solid var(--border2); display: none; }
+.new-col-form.open { display: block; }
+.new-col-input { width: 100%; background: var(--bg); border: 0.5px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 7px 10px; color: #fff; font-size: 12px; font-family: var(--font); outline: none; margin-bottom: 8px; transition: border-color 0.15s; }
+.new-col-input:focus { border-color: var(--accent); }
+.new-col-row { display: flex; gap: 6px; }
+.new-col-btn { font-family: var(--font); font-size: 11px; font-weight: 500; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.12s; }
+.new-col-btn.save { background: var(--accent); color: #fff; }
+.new-col-btn.save:hover { background: #6e66cc; }
+.new-col-btn.cancel { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+.new-col-btn.cancel:hover { background: rgba(255,255,255,0.1); }
+
+/* Toast */
+.toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 999; }
+.toast { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; font-family: var(--mono); color: var(--text); display: flex; align-items: center; gap: 8px; animation: toastIn 0.25s ease; max-width: 300px; }
+.toast.success { border-left: 2px solid var(--green); }
+.toast.error { border-left: 2px solid var(--red); }
+.toast.info { border-left: 2px solid var(--accent); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Notif panel */
+.notif-panel { position: absolute; right: 24px; top: 62px; width: 280px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; z-index: 50; box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none; }
+.notif-panel.open { display: block; }
+.notif-head { padding: 10px 14px; border-bottom: 0.5px solid var(--border2); font-size: 11px; color: var(--text-muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.07em; }
+.notif-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-bottom: 0.5px solid var(--border2); cursor: pointer; transition: background 0.12s; }
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: rgba(255,255,255,0.03); }
+.notif-dot2 { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); flex-shrink: 0; margin-top: 4px; }
+.notif-text { font-size: 11px; color: rgba(255,255,255,0.6); line-height: 1.5; }
+.notif-time { font-size: 10px; color: var(--text-dim); font-family: var(--mono); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="ed" style="position:relative">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo-wrap">
+      <div class="logo">pod<span>wave</span></div>
+      <div class="logo-role">Editor panel</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" data-page="dashboard"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Content</div>
+      <div class="nav-item" data-page="queue"><i class="ti ti-clock"></i> Review queue <span class="nav-badge purple" id="queueBadge">12</span></div>
+      <div class="nav-item" data-page="highlights"><i class="ti ti-scissors"></i> AI highlights <span class="nav-badge amber" id="hlBadge">5</span></div>
+      <div class="nav-item" data-page="collections"><i class="ti ti-books"></i> Collections</div>
+      <div class="nav-item" data-page="episodes"><i class="ti ti-microphone"></i> Episodes</div>
+      <div class="nav-item" data-page="published"><i class="ti ti-circle-check"></i> Published</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">System</div>
+      <div class="nav-item" data-page="settings"><i class="ti ti-settings"></i> Settings</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar">ED</div>
+      <div>
+        <div class="user-name">Editor</div>
+        <div class="user-role">editor@podwave.io</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="pageTitle">Editorial dashboard</div>
+        <div class="topbar-sub" id="pageSub">Thursday, June 1 · 3 items need your attention</div>
+      </div>
+      <div style="position:relative">
+        <div class="notif-btn" id="notifBtn"><i class="ti ti-bell"></i> Notifications <div class="notif-dot" id="notifDot"></div></div>
+        <div class="notif-panel" id="notifPanel">
+          <div class="notif-head">Notifications</div>
+          <div class="notif-item"><div class="notif-dot2"></div><div><div class="notif-text">12 podcasts pending review in queue</div><div class="notif-time">just now</div></div></div>
+          <div class="notif-item"><div class="notif-dot2"></div><div><div class="notif-text">5 AI highlights awaiting your approval</div><div class="notif-time">4 min ago</div></div></div>
+          <div class="notif-item"><div class="notif-dot2"></div><div><div class="notif-text">Hard Fork sync completed — 142 eps</div><div class="notif-time">8 min ago</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Dashboard -->
+      <div class="page active" id="page-dashboard">
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-label">Pending review</div><div class="kpi-val amber" id="kpi-pending">12</div><div class="kpi-change">+3 since yesterday</div></div>
+          <div class="kpi"><div class="kpi-label">Drafts</div><div class="kpi-val purple" id="kpi-drafts">7</div><div class="kpi-change">2 ready to publish</div></div>
+          <div class="kpi"><div class="kpi-label">Published</div><div class="kpi-val green" id="kpi-published">284</div><div class="kpi-change">+6 this week</div></div>
+          <div class="kpi"><div class="kpi-label">Highlights pending</div><div class="kpi-val amber" id="kpi-highlights">5</div><div class="kpi-change">AI generated</div></div>
+        </div>
+
+        <!-- Review Queue (preview) -->
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">Podcast review queue</span>
+            <span class="panel-action" id="viewAllQueue">View all 12</span>
+          </div>
+          <div id="dashQueueList"></div>
+        </div>
+
+        <!-- Two col -->
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">AI highlight clips — awaiting review</span>
+              <span class="panel-action" id="viewAllHL">View all 5</span>
+            </div>
+            <div id="dashHlList"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">Collections</span>
+              <span class="panel-action" id="dashNewCol">+ New</span>
+            </div>
+            <div id="dashColList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Review Queue full page -->
+      <div class="page" id="page-queue">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">Review queue</span>
+            <span class="panel-action" id="approveAllBtn">Approve all pending</span>
+          </div>
+          <div id="fullQueueList"></div>
+        </div>
+      </div>
+
+      <!-- AI Highlights full page -->
+      <div class="page" id="page-highlights">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">AI highlight clips</span>
+            <span class="panel-action">Generated by AI</span>
+          </div>
+          <div id="fullHlList"></div>
+        </div>
+      </div>
+
+      <!-- Collections full page -->
+      <div class="page" id="page-collections">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">Collections</span>
+            <span class="panel-action" id="newColBtn">+ New collection</span>
+          </div>
+          <div id="fullColList"></div>
+          <div class="new-col-form" id="newColForm">
+            <input class="new-col-input" id="newColName" placeholder="Collection name…" />
+            <div class="new-col-row">
+              <button class="new-col-btn save" id="saveColBtn">Save</button>
+              <button class="new-col-btn cancel" id="cancelColBtn">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Placeholder pages -->
+      <div class="page" id="page-episodes"><div class="placeholder-page"><i class="ti ti-microphone"></i><h3>Episodes</h3><p>Browse all ingested episodes — coming soon</p></div></div>
+      <div class="page" id="page-published"><div class="placeholder-page"><i class="ti ti-circle-check"></i><h3>Published</h3><p>All published podcasts — coming soon</p></div></div>
+      <div class="page" id="page-settings"><div class="placeholder-page"><i class="ti ti-settings"></i><h3>Settings</h3><p>Editor preferences — coming soon</p></div></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Trim modal -->
+<div class="modal-overlay" id="trimModal">
+  <div class="modal">
+    <div class="modal-title">Trim highlight clip</div>
+    <div class="modal-sub" id="trimModalSub">Drag the handles or edit timestamps directly</div>
+    <div class="trim-track">
+      <div class="trim-fill" id="trimFill" style="left:20%;width:16%"></div>
+    </div>
+    <div class="trim-times"><span id="trimStart">12:14</span><span id="trimEnd">14:48</span></div>
+    <div class="trim-inputs">
+      <div class="trim-field"><label>Start time</label><input id="trimStartInput" value="12:14" placeholder="mm:ss" /></div>
+      <div class="trim-field"><label>End time</label><input id="trimEndInput" value="14:48" placeholder="mm:ss" /></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" id="trimCancel">Cancel</button>
+      <button class="modal-btn save" id="trimSave">Save trim</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tag modal -->
+<div class="modal-overlay" id="tagModal">
+  <div class="modal">
+    <div class="modal-title">Tag highlight clip</div>
+    <div class="modal-sub">Select all relevant tags for this clip</div>
+    <div class="tag-grid" id="tagGrid"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" id="tagCancel">Cancel</button>
+      <button class="modal-btn save" id="tagSave">Save tags</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── State ──
+const state = {
+  queue: [
+    { id: 1, title: 'The Knowledge Project', meta: 'Business · 89 eps · ingested 2h ago', artClass: 'qa1', status: 'pending' },
+    { id: 2, title: 'Acquired', meta: 'Business · 122 eps · ingested 5h ago', artClass: 'qa2', status: 'review' },
+    { id: 3, title: 'My First Million', meta: 'Business · 510 eps · ingested 1d ago', artClass: 'qa3', status: 'pending' },
+    { id: 4, title: 'Darknet Diaries', meta: 'Technology · 148 eps · ingested 6h ago', artClass: 'qa4', status: 'pending' },
+  ],
+  highlights: [
+    { id: 1, title: 'Hard Fork · Ep. 142 — "The model is already smarter than us"', snippet: 'Key segment: speaker discusses AGI timeline — high engagement markers detected', timeRange: '12:14 – 14:48', total: '56:10', clipLeft: '20%', clipWidth: '16%' },
+    { id: 2, title: 'Lex Fridman · Ep. 398 — "The nature of consciousness"', snippet: 'Key segment: debate on hard problem of consciousness — sentiment peak detected', timeRange: '41:05 – 42:55', total: '2:18:44', clipLeft: '35%', clipWidth: '12%' },
+    { id: 3, title: 'Huberman Lab · Ep. 71 — "Controlling dopamine"', snippet: 'Key segment: protocol for dopamine regulation — listener retention spike', timeRange: '28:00 – 31:10', total: '1:45:22', clipLeft: '27%', clipWidth: '10%' },
+  ],
+  collections: [
+    { id: 1, title: 'Staff picks — June', meta: '8 podcasts', status: 'published', iconClass: 'c1', icon: 'ti-trending-up' },
+    { id: 2, title: 'AI & technology deep dives', meta: '12 podcasts', status: 'published', iconClass: 'c2', icon: 'ti-brain' },
+    { id: 3, title: 'True crime essentials', meta: '6 podcasts', status: 'draft', iconClass: 'c3', icon: 'ti-flame' },
+    { id: 4, title: 'Best for beginners', meta: '5 podcasts', status: 'draft', iconClass: 'c1', icon: 'ti-heart' },
+  ],
+  activeTrimId: null,
+  activeTagId: null,
+};
+
+const TAGS = ['AI', 'Technology', 'Business', 'Science', 'Health', 'True Crime', 'Finance', 'Interview', 'Deep dive', 'Motivational', 'Educational', 'Must listen'];
+let selectedTags = [];
+
+// ── Render queue row ──
+function renderQueueRow(item, container) {
+  const row = document.createElement('div');
+  row.className = 'qrow';
+  row.id = `qrow-${item.id}`;
+  const statusLabel = { pending: 'Pending', review: 'In review', approved: 'Approved', rejected: 'Rejected' }[item.status];
+  row.innerHTML = `
+    <div class="qart ${item.artClass}"></div>
+    <div class="qinfo">
+      <div class="qtitle">${item.title}</div>
+      <div class="qmeta">${item.meta}</div>
+    </div>
+    <span class="qstatus ${item.status === 'review' ? 'review' : item.status}">${statusLabel}</span>
+    <div class="qbtns">
+      ${item.status !== 'approved' && item.status !== 'rejected' ? `
+        <button class="qbtn approve" onclick="handleQueue(${item.id},'approve')"><i class="ti ti-check"></i> Approve</button>
+        <button class="qbtn reject" onclick="handleQueue(${item.id},'reject')"><i class="ti ti-x"></i> Reject</button>
+      ` : ''}
+      <button class="qbtn" onclick="toast('info','Editing ${item.title}…')"><i class="ti ti-edit"></i> Edit</button>
+    </div>`;
+  container.appendChild(row);
+}
+
+function renderQueues() {
+  const dash = document.getElementById('dashQueueList');
+  const full = document.getElementById('fullQueueList');
+  dash.innerHTML = ''; full.innerHTML = '';
+  state.queue.forEach(item => {
+    renderQueueRow(item, dash);
+    renderQueueRow(item, full);
+  });
+}
+
+function handleQueue(id, action) {
+  const item = state.queue.find(q => q.id === id);
+  if (!item) return;
+  item.status = action === 'approve' ? 'approved' : 'rejected';
+  renderQueues();
+  const pending = state.queue.filter(q => q.status === 'pending' || q.status === 'review').length;
+  updateBadge('queueBadge', pending);
+  document.getElementById('kpi-pending').textContent = pending;
+  if (action === 'approve') {
+    const pub = parseInt(document.getElementById('kpi-published').textContent.replace(/,/g,'')) + item.meta.match(/(\d+) eps/)?.[1] * 0 + 1;
+    document.getElementById('kpi-published').textContent = (pub).toLocaleString();
+    toast('success', `"${item.title}" approved & published`);
+  } else {
+    toast('error', `"${item.title}" rejected`);
+  }
+}
+
+// Approve all pending
+document.getElementById('approveAllBtn').addEventListener('click', () => {
+  state.queue.filter(q => q.status === 'pending' || q.status === 'review').forEach(q => { q.status = 'approved'; });
+  renderQueues();
+  updateBadge('queueBadge', 0);
+  document.getElementById('kpi-pending').textContent = '0';
+  toast('success', 'All pending items approved');
+});
+
+// ── Render highlights ──
+function renderHlRow(item, container) {
+  const el = document.createElement('div');
+  el.className = 'hl-item';
+  el.id = `hl-${item.id}`;
+  el.innerHTML = `
+    <div class="hl-row">
+      <div class="hl-icon"><i class="ti ti-sparkles"></i></div>
+      <div style="flex:1">
+        <div class="hl-title">${item.title}</div>
+        <div class="hl-snippet">${item.snippet}</div>
+        <div class="hl-bar"><div class="hl-clip" style="left:${item.clipLeft};width:${item.clipWidth}"></div></div>
+        <div class="hl-times"><span>0:00</span><span>${item.timeRange}</span><span>${item.total}</span></div>
+        <div class="hl-btns">
+          <button class="qbtn approve" onclick="acceptHL(${item.id})"><i class="ti ti-check"></i> Accept</button>
+          <button class="qbtn reject" onclick="rejectHL(${item.id})"><i class="ti ti-x"></i> Reject</button>
+          <button class="qbtn" onclick="openTrim(${item.id})"><i class="ti ti-adjustments-horizontal"></i> Trim</button>
+          <button class="qbtn" onclick="openTag(${item.id})"><i class="ti ti-tag"></i> Tag</button>
+        </div>
+      </div>
+    </div>`;
+  container.appendChild(el);
+}
+
+function renderHighlights() {
+  const dash = document.getElementById('dashHlList');
+  const full = document.getElementById('fullHlList');
+  dash.innerHTML = ''; full.innerHTML = '';
+  state.highlights.slice(0, 2).forEach(h => renderHlRow(h, dash));
+  state.highlights.forEach(h => renderHlRow(h, full));
+}
+
+function acceptHL(id) {
+  removeHL(id);
+  toast('success', 'Highlight clip accepted');
+}
+function rejectHL(id) {
+  removeHL(id);
+  toast('error', 'Highlight clip rejected');
+}
+function removeHL(id) {
+  [`hl-${id}`].forEach(elId => {
+    const el = document.getElementById(elId);
+    if (el) { el.classList.add('dismissed'); setTimeout(() => el.remove(), 310); }
+  });
+  state.highlights = state.highlights.filter(h => h.id !== id);
+  updateBadge('hlBadge', state.highlights.length);
+  document.getElementById('kpi-highlights').textContent = state.highlights.length;
+}
+
+// ── Trim modal ──
+function openTrim(id) {
+  const h = state.highlights.find(h => h.id === id);
+  if (!h) return;
+  state.activeTrimId = id;
+  document.getElementById('trimModalSub').textContent = h.title;
+  document.getElementById('trimFill').style.left = h.clipLeft;
+  document.getElementById('trimFill').style.width = h.clipWidth;
+  const [start, end] = h.timeRange.split(' – ');
+  document.getElementById('trimStart').textContent = start;
+  document.getElementById('trimEnd').textContent = end;
+  document.getElementById('trimStartInput').value = start;
+  document.getElementById('trimEndInput').value = end;
+  document.getElementById('trimModal').classList.add('open');
+}
+document.getElementById('trimCancel').addEventListener('click', () => document.getElementById('trimModal').classList.remove('open'));
+document.getElementById('trimSave').addEventListener('click', () => {
+  const h = state.highlights.find(h => h.id === state.activeTrimId);
+  if (h) {
+    h.timeRange = `${document.getElementById('trimStartInput').value} – ${document.getElementById('trimEndInput').value}`;
+    renderHighlights();
+    toast('success', 'Trim saved');
+  }
+  document.getElementById('trimModal').classList.remove('open');
+});
+
+// ── Tag modal ──
+function openTag(id) {
+  state.activeTagId = id;
+  selectedTags = [];
+  const grid = document.getElementById('tagGrid');
+  grid.innerHTML = '';
+  TAGS.forEach(tag => {
+    const chip = document.createElement('div');
+    chip.className = 'tag-chip';
+    chip.textContent = tag;
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('selected');
+      if (chip.classList.contains('selected')) selectedTags.push(tag);
+      else selectedTags = selectedTags.filter(t => t !== tag);
+    });
+    grid.appendChild(chip);
+  });
+  document.getElementById('tagModal').classList.add('open');
+}
+document.getElementById('tagCancel').addEventListener('click', () => document.getElementById('tagModal').classList.remove('open'));
+document.getElementById('tagSave').addEventListener('click', () => {
+  document.getElementById('tagModal').classList.remove('open');
+  toast('success', selectedTags.length ? `Tagged: ${selectedTags.join(', ')}` : 'No tags selected');
+});
+
+// ── Collections ──
+function renderCollections() {
+  const dash = document.getElementById('dashColList');
+  const full = document.getElementById('fullColList');
+  dash.innerHTML = ''; full.innerHTML = '';
+  state.collections.forEach(col => {
+    [dash, full].forEach(container => {
+      const el = document.createElement('div');
+      el.className = 'col-item';
+      el.innerHTML = `
+        <div class="col-icon ${col.iconClass}"><i class="ti ${col.icon}"></i></div>
+        <div style="flex:1">
+          <div class="col-title">${col.title}</div>
+          <div class="col-meta">${col.meta} <span class="col-status ${col.status === 'published' ? 'pub' : 'draft'}">${col.status}</span></div>
+        </div>
+        <span class="col-edit" onclick="toast('info','Editing "${col.title}"…')"><i class="ti ti-edit"></i></span>`;
+      container.appendChild(el);
+    });
+  });
+}
+
+// New collection
+['dashNewCol', 'newColBtn'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', () => {
+    switchPage('collections');
+    document.getElementById('newColForm').classList.add('open');
+    document.getElementById('newColName').focus();
+  });
+});
+document.getElementById('saveColBtn').addEventListener('click', () => {
+  const name = document.getElementById('newColName').value.trim();
+  if (!name) return;
+  const icons = ['ti-star','ti-bookmark','ti-music','ti-headphones','ti-award'];
+  const classes = ['c1','c2','c3'];
+  state.collections.push({
+    id: Date.now(), title: name, meta: '0 podcasts',
+    status: 'draft', iconClass: classes[Math.floor(Math.random()*3)],
+    icon: icons[Math.floor(Math.random()*icons.length)]
+  });
+  document.getElementById('newColName').value = '';
+  document.getElementById('newColForm').classList.remove('open');
+  renderCollections();
+  toast('success', `Collection "${name}" created`);
+});
+document.getElementById('cancelColBtn').addEventListener('click', () => {
+  document.getElementById('newColForm').classList.remove('open');
+  document.getElementById('newColName').value = '';
+});
+
+// ── Notifications ──
+document.getElementById('notifBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('notifPanel').classList.toggle('open');
+  document.getElementById('notifDot').style.display = 'none';
+});
+document.addEventListener('click', () => document.getElementById('notifPanel').classList.remove('open'));
+document.getElementById('notifPanel').addEventListener('click', e => e.stopPropagation());
+
+// ── Navigation ──
+const pageMeta = {
+  dashboard: { title: 'Editorial dashboard', sub: 'Thursday, June 1 · 3 items need your attention' },
+  queue: { title: 'Review queue', sub: 'Approve, reject, or edit incoming podcasts' },
+  highlights: { title: 'AI highlights', sub: 'AI-generated clip suggestions awaiting review' },
+  collections: { title: 'Collections', sub: 'Curate and publish podcast collections' },
+  episodes: { title: 'Episodes', sub: 'Browse all ingested episodes' },
+  published: { title: 'Published', sub: 'All published podcasts' },
+  settings: { title: 'Settings', sub: 'Editor preferences' },
+};
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  document.querySelector(`[data-page="${page}"]`).classList.add('active');
+  const m = pageMeta[page] || { title: page, sub: '' };
+  document.getElementById('pageTitle').textContent = m.title;
+  document.getElementById('pageSub').textContent = m.sub;
+}
+document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => switchPage(el.dataset.page)));
+document.getElementById('viewAllQueue').addEventListener('click', () => switchPage('queue'));
+document.getElementById('viewAllHL').addEventListener('click', () => switchPage('highlights'));
+
+// ── Badges ──
+function updateBadge(id, count) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = count;
+  el.style.display = count > 0 ? '' : 'none';
+}
+
+// ── Toast ──
+function toast(type, msg) {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icon = { success: 'ti-circle-check', error: 'ti-alert-circle', info: 'ti-info-circle' }[type];
+  el.innerHTML = `<i class="ti ${icon}"></i> ${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateY(8px)'; el.style.transition='all 0.2s ease'; setTimeout(() => el.remove(), 200); }, 3000);
+}
+
+// ── Init ──
+renderQueues();
+renderHighlights();
+renderCollections();
+</script>
+</body>
+</html>

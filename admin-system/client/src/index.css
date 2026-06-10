@@ -1,0 +1,158 @@
+/* PodWave Admin - Base Styles */
+/* Extracted from admin_desktop.html and admin_mobile.html */
+
+/* Import fonts - MUST be at the top */
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap');
+
+/* Tabler Icons */
+@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
+
+:root {
+  /* Colors */
+  --bg: #0c0c10;
+  --surface: #161619;
+  --surface2: #1c1c21;
+  --surface3: #212127;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.04);
+  --text: #f0eee8;
+  --text-muted: rgba(255,255,255,0.35);
+  --text-dim: rgba(255,255,255,0.2);
+  
+  /* Accent colors */
+  --accent: #D85A30;
+  --accent-dim: rgba(216,90,48,0.08);
+  --accent-border: rgba(216,90,48,0.18);
+  
+  /* Status colors */
+  --green: #5DCAA5;
+  --green-dim: rgba(93,202,165,0.08);
+  --green-border: rgba(93,202,165,0.15);
+  --red: #E24B4A;
+  --red-dim: rgba(226,75,74,0.1);
+  --yellow: #EF9F27;
+  --yellow-dim: rgba(239,159,39,0.12);
+  --purple: #7F77DD;
+  --purple-dim: rgba(127,119,221,0.1);
+  
+  /* Typography */
+  --font: 'Sora', sans-serif;
+  --mono: 'DM Mono', monospace;
+  
+  /* Spacing */
+  --radius: 8px;
+  --radius-lg: 12px;
+  --sidebar-w: 210px;
+  --topbar-h: 54px;
+  --bottom-nav-h: 64px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background-color: #09090d;
+  color: var(--text);
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+#root {
+  height: 100%;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes toastIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(8px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes pgIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(4px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE BASE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  
+  /* Hide scrollbars on mobile for cleaner look */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Use dynamic viewport height on mobile */
+  body {
+    min-height: 100dvh;
+  }
+}
+
+/* Panel styles shared across components */
+.panel {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .panel {
+    border-radius: 14px;
+  }
+}

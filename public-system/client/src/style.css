@@ -1,0 +1,76 @@
+/* PodWave Public Client - Global Styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+/* CSS Variables - Design Tokens */
+:root {
+  --bg: #0a0a0f;
+  --bg2: #13131a;
+  --bg3: #18181f;
+  --bg4: #1e1e28;
+  --border: rgba(255, 255, 255, 0.07);
+  --border2: rgba(255, 255, 255, 0.12);
+  --text: #ffffff;
+  --text2: rgba(255, 255, 255, 0.6);
+  --text3: rgba(255, 255, 255, 0.32);
+  --accent: #5DCAA5;
+  --accent-dark: #04342C;
+  --accent-dim: rgba(93, 202, 165, 0.12);
+  --accent-glow: rgba(93, 202, 165, 0.08);
+  --purple: #534AB7;
+  --coral: #993C1D;
+  --blue: #185FA5;
+  --amber: #854F0B;
+  --teal: #0F6E56;
+  --radius: 12px;
+  --sidebar-w: 220px;
+  --player-h: 82px;
+}
+
+/* Theme Color Classes */
+.t1 { background: #1D9E75; }
+.t2 { background: #534AB7; }
+.t3 { background: #993C1D; }
+.t-a1 { background: #185FA5; }
+.t-a2 { background: #854F0B; }
+.t-a3 { background: #3C3489; }
+.t-a4 { background: #0F6E56; }
+.t-a5 { background: #5F5E5A; }
+.t-a6 { background: #993356; }
+.t-a7 { background: #3B6D11; }
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Hide scrollbar for mobile */
+.scroll-area::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,183 @@
+/* Failed Jobs Panel Styles - Extracted from admin_desktop.html */
+
+.failed-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.failed-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  transition: background 0.12s;
+}
+
+.failed-row:last-child {
+  border-bottom: none;
+}
+
+.failed-row:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.failed-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--red-dim);
+  border: 0.5px solid rgba(226,75,74,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--red);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.failed-info {
+  flex: 1;
+  min-width: 0; /* Allow shrinking */
+}
+
+.failed-name {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.failed-reason {
+  font-size: 11px;
+  color: var(--red);
+  font-family: var(--mono);
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.failed-meta {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.retry-btn {
+  background: var(--yellow-dim);
+  border: 0.5px solid rgba(239,159,39,0.25);
+  color: var(--yellow);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-family: var(--mono);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.12s;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.retry-btn:hover {
+  background: rgba(239,159,39,0.2);
+}
+
+.retry-btn.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.retry-btn.loading i {
+  animation: spin 0.7s linear infinite;
+}
+
+/* Empty state */
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.empty-state i {
+  font-size: 32px;
+  color: var(--text-dim);
+}
+
+.empty-state p {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+  .failed-list {
+    max-height: none;
+  }
+  
+  .failed-row {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  
+  .failed-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    font-size: 15px;
+  }
+  
+  .failed-name {
+    font-size: 13px;
+  }
+  
+  .failed-reason {
+    font-size: 10.5px;
+  }
+  
+  .failed-meta {
+    font-size: 9.5px;
+  }
+  
+  .retry-btn {
+    padding: 7px 11px;
+    border-radius: 7px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .failed-row {
+    padding: 10px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .failed-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+  
+  .failed-name {
+    font-size: 12px;
+  }
+  
+  .retry-btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+}

@@ -1,0 +1,186 @@
+/* Add Feed Panel Styles - Extracted from admin_desktop.html */
+
+.add-panel {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  padding: 14px 16px;
+}
+
+.add-panel-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.add-input {
+  flex: 1;
+  background: var(--bg);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 12px;
+  font-family: var(--mono);
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 0; /* Prevent overflow */
+}
+
+.add-input::placeholder {
+  color: rgba(255,255,255,0.22);
+}
+
+.add-input:focus {
+  border-color: var(--accent);
+}
+
+.add-input.error {
+  border-color: var(--red);
+}
+
+.add-select {
+  background: var(--bg);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  font-family: var(--mono);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.add-select:focus {
+  border-color: var(--accent);
+}
+
+.add-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.add-btn:hover {
+  background: #c54f28;
+}
+
+.add-btn:active {
+  transform: scale(0.97);
+}
+
+.add-btn i {
+  font-size: 13px;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+  .add-panel {
+    border-radius: 14px; /* var(--radius-lg) mobile */
+    padding: 14px;
+  }
+  
+  .add-panel-label {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  
+  .add-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .add-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-bottom: 0;
+  }
+  
+  .add-input::placeholder {
+    font-size: 12px;
+  }
+  
+  .add-select {
+    width: 100%;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  
+  /* Mobile: Input full width, then select + button in a row */
+  .add-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  /* Create a row for select and button on mobile */
+  .add-row::after {
+    content: '';
+    display: none;
+  }
+}
+
+/* Mobile specific: stack input, then select+button side by side */
+@media (max-width: 768px) {
+  .add-row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .add-input {
+    flex: 1 1 100%;
+    margin-bottom: 8px;
+  }
+  
+  .add-select,
+  .add-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-panel {
+    padding: 12px;
+  }
+  
+  .add-input {
+    padding: 10px 12px;
+  }
+}

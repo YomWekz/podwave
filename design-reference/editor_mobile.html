@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PodWave — Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #0f0f14;
+  --surface: #1a1a22;
+  --surface2: #1f1f28;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.04);
+  --text: #f0eee8;
+  --text-muted: rgba(255,255,255,0.35);
+  --text-dim: rgba(255,255,255,0.2);
+  --accent: #7F77DD;
+  --accent-dim: rgba(127,119,221,0.08);
+  --accent-light: #AFA9EC;
+  --green: #5DCAA5;
+  --green-dim: rgba(93,202,165,0.1);
+  --red: #E24B4A;
+  --red-dim: rgba(226,75,74,0.1);
+  --amber: #EF9F27;
+  --amber-dim: rgba(239,159,39,0.1);
+  --coral: #D85A30;
+  --font: 'Sora', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --nav-h: 64px;
+  --top-h: 56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #09090d;
+  font-family: var(--font);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ── App shell ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--bg);
+  position: relative;
+}
+
+/* ── Top bar ── */
+.topbar {
+  height: var(--top-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 0.5px solid var(--border);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 20;
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.menu-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px; cursor: pointer;
+  color: rgba(255,255,255,0.5);
+  font-size: 18px;
+  transition: all 0.15s;
+}
+.menu-btn:active { background: rgba(255,255,255,0.06); color: #fff; }
+.logo { font-size: 14px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+.logo span { color: var(--accent); }
+.topbar-right { display: flex; align-items: center; gap: 6px; }
+.icon-btn {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px; cursor: pointer;
+  color: rgba(255,255,255,0.4);
+  font-size: 17px;
+  position: relative;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.icon-btn:active { background: rgba(255,255,255,0.06); color: #fff; }
+.notif-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+  position: absolute;
+  top: 4px; right: 4px;
+  border: 1.5px solid var(--bg);
+}
+.user-avatar-sm {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600;
+  color: #26215C;
+}
+
+/* ── Slide-out drawer ── */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 90;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.drawer-overlay.open { opacity: 1; pointer-events: all; }
+.drawer {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 240px;
+  background: var(--surface);
+  border-right: 0.5px solid var(--border);
+  z-index: 95;
+  display: flex; flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.drawer.open { transform: translateX(0); }
+.drawer-logo { padding: 20px 18px 16px; border-bottom: 0.5px solid var(--border); }
+.drawer-logo-text { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+.drawer-logo-text span { color: var(--accent); }
+.drawer-role { font-size: 10px; color: var(--text-dim); margin-top: 2px; font-family: var(--mono); }
+.drawer-nav { padding: 12px 0; flex: 1; overflow-y: auto; }
+.nav-label { font-size: 9.5px; color: var(--text-dim); letter-spacing: 0.1em; padding: 0 16px 6px; text-transform: uppercase; font-family: var(--mono); }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.38);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-item i { font-size: 17px; flex-shrink: 0; }
+.nav-item.active { color: #fff; background: var(--accent-dim); border-left-color: var(--accent); }
+.nav-badge {
+  margin-left: auto;
+  font-size: 10px; padding: 2px 7px;
+  border-radius: 8px; font-weight: 500;
+  font-family: var(--mono);
+}
+.nav-badge.purple { background: rgba(127,119,221,0.15); color: var(--accent-light); }
+.nav-badge.amber { background: var(--amber-dim); color: var(--amber); }
+.drawer-user {
+  padding: 14px 16px;
+  border-top: 0.5px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.drawer-user-name { font-size: 12px; font-weight: 500; color: #fff; }
+.drawer-user-role { font-size: 10px; color: rgba(255,255,255,0.28); font-family: var(--mono); }
+
+/* ── Page title strip ── */
+.page-strip {
+  padding: 10px 16px 8px;
+  border-bottom: 0.5px solid var(--border2);
+  flex-shrink: 0;
+}
+.page-strip-title { font-size: 13px; font-weight: 500; color: #fff; }
+.page-strip-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; font-family: var(--mono); }
+
+/* ── Content ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: calc(var(--nav-h) + 16px);
+}
+.content::-webkit-scrollbar { display: none; }
+
+/* ── Pages ── */
+.page { display: none; flex-direction: column; gap: 12px; }
+.page.active { display: flex; }
+
+/* ── KPI grid ── */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kpi {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+}
+.kpi-label { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; font-family: var(--mono); }
+.kpi-val { font-size: 24px; font-weight: 500; line-height: 1; }
+.kpi-val.purple { color: var(--accent); }
+.kpi-val.amber { color: var(--amber); }
+.kpi-val.green { color: var(--green); }
+.kpi-val.white { color: #fff; }
+.kpi-change { font-size: 9px; color: var(--text-dim); margin-top: 4px; font-family: var(--mono); }
+
+/* ── Panel ── */
+.panel {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.panel-head {
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border2);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-title {
+  font-size: 10px; font-weight: 500;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.panel-action {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--mono);
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Queue rows ── */
+.qrow {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 0.5px solid var(--border2);
+  transition: background 0.12s;
+}
+.qrow:last-child { border-bottom: none; }
+.qrow.dismissed {
+  opacity: 0; transform: translateX(16px);
+  transition: all 0.3s ease; pointer-events: none;
+}
+.qart { width: 36px; height: 36px; border-radius: 7px; flex-shrink: 0; }
+.qa1 { background: #1D9E75; } .qa2 { background: #534AB7; }
+.qa3 { background: #993C1D; } .qa4 { background: #185FA5; }
+.qinfo { flex: 1; min-width: 0; }
+.qtitle { font-size: 12px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qmeta { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 1px; font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qstatus {
+  font-size: 9.5px; padding: 3px 7px;
+  border-radius: 4px; font-weight: 500;
+  white-space: nowrap; font-family: var(--mono);
+  flex-shrink: 0;
+}
+.qstatus.pending { background: var(--amber-dim); color: var(--amber); }
+.qstatus.review { background: rgba(127,119,221,0.1); color: var(--accent-light); }
+.qstatus.approved { background: var(--green-dim); color: var(--green); }
+.qstatus.rejected { background: var(--red-dim); color: var(--red); }
+
+/* Mobile queue action row */
+.qrow-actions {
+  display: flex; gap: 6px;
+  padding: 0 14px 11px;
+  border-bottom: 0.5px solid var(--border2);
+  margin-top: -4px;
+}
+.qrow-wrap:last-child .qrow-actions { border-bottom: none; }
+.qbtn {
+  flex: 1;
+  font-size: 11px; padding: 7px 8px;
+  border-radius: 6px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  cursor: pointer; background: none;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  font-family: var(--font);
+  transition: all 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.qbtn:active { opacity: 0.7; }
+.qbtn.approve { border-color: rgba(93,202,165,0.25); color: var(--green); }
+.qbtn.approve:active { background: var(--green-dim); }
+.qbtn.reject { border-color: rgba(226,75,74,0.25); color: var(--red); }
+.qbtn.reject:active { background: var(--red-dim); }
+.qbtn i { font-size: 12px; }
+
+/* ── Highlights ── */
+.hl-item {
+  padding: 12px 14px;
+  border-bottom: 0.5px solid var(--border2);
+  transition: background 0.12s;
+}
+.hl-item:last-child { border-bottom: none; }
+.hl-item.dismissed { opacity: 0; transform: translateX(16px); transition: all 0.3s ease; pointer-events: none; }
+.hl-row { display: flex; gap: 10px; align-items: flex-start; }
+.hl-icon {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: rgba(127,119,221,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--accent);
+  flex-shrink: 0; margin-top: 1px;
+}
+.hl-title { font-size: 12px; font-weight: 500; color: #fff; margin-bottom: 3px; }
+.hl-snippet { font-size: 11px; color: rgba(255,255,255,0.35); line-height: 1.5; margin-bottom: 8px; }
+.hl-bar { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; position: relative; margin-bottom: 6px; }
+.hl-clip { position: absolute; height: 3px; background: var(--accent); border-radius: 2px; }
+.hl-times { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.2); margin-bottom: 8px; font-family: var(--mono); }
+.hl-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.hl-btns .qbtn { flex: unset; }
+
+/* ── Collections ── */
+.col-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border2);
+  transition: background 0.12s;
+}
+.col-item:last-child { border-bottom: none; }
+.col-icon {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.col-icon.c1 { background: var(--green-dim); color: var(--green); }
+.col-icon.c2 { background: var(--accent-dim); color: var(--accent); }
+.col-icon.c3 { background: rgba(216,90,48,0.12); color: var(--coral); }
+.col-title { font-size: 12px; font-weight: 500; color: #fff; }
+.col-meta { font-size: 10px; color: rgba(255,255,255,0.3); font-family: var(--mono); }
+.col-status { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-family: var(--mono); margin-left: 4px; }
+.col-status.pub { background: var(--green-dim); color: var(--green); }
+.col-status.draft { background: var(--amber-dim); color: var(--amber); }
+.col-edit { font-size: 15px; color: rgba(255,255,255,0.25); cursor: pointer; padding: 6px; border-radius: 4px; transition: all 0.12s; }
+.col-edit:active { color: var(--accent); background: var(--accent-dim); }
+
+/* New collection form */
+.new-col-form { padding: 12px 14px; border-top: 0.5px solid var(--border2); display: none; }
+.new-col-form.open { display: block; }
+.new-col-input {
+  width: 100%; background: var(--bg);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius); padding: 9px 12px;
+  color: #fff; font-size: 13px; font-family: var(--font);
+  outline: none; margin-bottom: 8px;
+  transition: border-color 0.15s;
+}
+.new-col-input:focus { border-color: var(--accent); }
+.new-col-row { display: flex; gap: 6px; }
+.new-col-btn {
+  font-family: var(--font); font-size: 12px; font-weight: 500;
+  padding: 8px 16px; border-radius: 6px;
+  border: none; cursor: pointer; transition: all 0.12s;
+}
+.new-col-btn.save { background: var(--accent); color: #fff; }
+.new-col-btn.cancel { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+
+/* ── Placeholder pages ── */
+.placeholder-page {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: var(--text-muted); gap: 10px; padding: 60px;
+  text-align: center; min-height: 300px;
+}
+.placeholder-page i { font-size: 34px; opacity: 0.3; }
+.placeholder-page h3 { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.4); }
+.placeholder-page p { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  height: var(--nav-h);
+  background: rgba(15,15,20,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--border);
+  display: flex; align-items: center;
+  z-index: 30;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-tab {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px; padding: 6px 0;
+  cursor: pointer;
+  color: rgba(255,255,255,0.28);
+  font-size: 9.5px; font-family: var(--mono);
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.nav-tab i { font-size: 20px; }
+.nav-tab.active { color: var(--accent-light); }
+.nav-tab .tab-badge {
+  position: absolute;
+  top: 3px; right: calc(50% - 16px);
+  min-width: 16px; height: 16px;
+  border-radius: 8px;
+  background: var(--amber);
+  color: #0f0f14;
+  font-size: 9px; font-weight: 600;
+  font-family: var(--mono);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px;
+  border: 1.5px solid #09090d;
+}
+.nav-tab .tab-badge.purple { background: var(--accent); color: #fff; }
+
+/* ── Notif panel ── */
+.notif-panel {
+  position: fixed;
+  right: 0; top: var(--top-h);
+  width: min(280px, 90vw);
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  overflow: hidden; z-index: 50;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  display: none;
+  transform: translateY(-8px);
+  transition: transform 0.15s, opacity 0.15s;
+  opacity: 0;
+}
+.notif-panel.open { display: block; transform: translateY(0); opacity: 1; }
+.notif-head {
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border2);
+  font-size: 11px; color: var(--text-muted);
+  font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+.notif-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border2);
+  cursor: pointer; transition: background 0.12s;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:active { background: rgba(255,255,255,0.03); }
+.notif-dot2 { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); flex-shrink: 0; margin-top: 4px; }
+.notif-text { font-size: 11px; color: rgba(255,255,255,0.6); line-height: 1.5; }
+.notif-time { font-size: 10px; color: var(--text-dim); font-family: var(--mono); margin-top: 2px; }
+
+/* ── Trim modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 100; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  width: 100%; max-width: 430px;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-handle {
+  width: 36px; height: 4px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.modal-title { font-size: 14px; font-weight: 500; color: #fff; margin-bottom: 4px; }
+.modal-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-family: var(--mono); }
+.trim-track {
+  position: relative; height: 44px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px; margin-bottom: 12px; overflow: hidden;
+}
+.trim-fill {
+  position: absolute; top: 0; bottom: 0;
+  background: rgba(127,119,221,0.25);
+  border-left: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+}
+.trim-times {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-family: var(--mono);
+}
+.trim-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.trim-field label { font-size: 10px; color: var(--text-dim); font-family: var(--mono); display: block; margin-bottom: 5px; }
+.trim-field input {
+  width: 100%; background: var(--bg);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius); padding: 9px 10px;
+  color: #fff; font-size: 13px; font-family: var(--mono);
+  outline: none; transition: border-color 0.15s;
+}
+.trim-field input:focus { border-color: var(--accent); }
+.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.modal-btn {
+  font-family: var(--font); font-size: 13px; font-weight: 500;
+  padding: 10px 14px; border-radius: var(--radius);
+  border: 0.5px solid var(--border); cursor: pointer; transition: all 0.12s;
+  text-align: center;
+}
+.modal-btn.cancel { background: none; color: var(--text-muted); }
+.modal-btn.save { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Tag modal */
+.tag-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.tag-chip {
+  font-size: 11px; padding: 6px 12px;
+  border-radius: 16px; border: 0.5px solid var(--border);
+  color: var(--text-muted); cursor: pointer; font-family: var(--mono);
+  transition: all 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.tag-chip.selected { background: var(--accent-dim); border-color: var(--accent); color: var(--accent-light); }
+
+/* ── Toast ── */
+.toast-container {
+  position: fixed; bottom: calc(var(--nav-h) + 10px); left: 12px; right: 12px;
+  display: flex; flex-direction: column; gap: 6px; z-index: 200;
+  pointer-events: none;
+  align-items: stretch;
+}
+.toast {
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px; font-size: 12px;
+  font-family: var(--mono); color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+  animation: toastIn 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.toast.success { border-left: 2px solid var(--green); }
+.toast.error { border-left: 2px solid var(--red); }
+.toast.info { border-left: 2px solid var(--accent); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Section labels ── */
+.section-label {
+  font-size: 9.5px; color: var(--text-dim);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: var(--mono); padding: 0 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="menu-btn" id="menuBtn"><i class="ti ti-menu-2"></i></div>
+      <div class="logo">pod<span>wave</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="icon-btn" id="notifBtn">
+        <i class="ti ti-bell"></i>
+        <div class="notif-dot" id="notifDot"></div>
+      </div>
+      <div class="user-avatar-sm">ED</div>
+    </div>
+    <!-- Notification panel -->
+    <div class="notif-panel" id="notifPanel">
+      <div class="notif-head">Notifications</div>
+      <div class="notif-item"><div class="notif-dot2"></div><div><div class="notif-text">12 podcasts pending review in queue</div><div class="notif-time">just now</div></div></div>
+      <div class="notif-item"><div class="notif-dot2"></div><div><div class="notif-text">5 AI highlights awaiting your approval</div><div class="notif-time">4 min ago</div></div></div>
+      <div class="notif-item"><div class="notif-dot2"></div><div><div class="notif-text">Hard Fork sync completed — 142 eps</div><div class="notif-time">8 min ago</div></div></div>
+    </div>
+  </div>
+
+  <!-- Page title strip -->
+  <div class="page-strip">
+    <div class="page-strip-title" id="pageTitle">Editorial dashboard</div>
+    <div class="page-strip-sub" id="pageSub">Saturday, June 6 · 3 items need your attention</div>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="content">
+
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">Pending review</div><div class="kpi-val amber" id="kpi-pending">12</div><div class="kpi-change">+3 since yesterday</div></div>
+        <div class="kpi"><div class="kpi-label">Drafts</div><div class="kpi-val purple" id="kpi-drafts">7</div><div class="kpi-change">2 ready to publish</div></div>
+        <div class="kpi"><div class="kpi-label">Published</div><div class="kpi-val green" id="kpi-published">284</div><div class="kpi-change">+6 this week</div></div>
+        <div class="kpi"><div class="kpi-label">Highlights pending</div><div class="kpi-val amber" id="kpi-highlights">5</div><div class="kpi-change">AI generated</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Review queue</span>
+          <span class="panel-action" id="viewAllQueue">View all 12</span>
+        </div>
+        <div id="dashQueueList"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">AI highlight clips</span>
+          <span class="panel-action" id="viewAllHL">View all 5</span>
+        </div>
+        <div id="dashHlList"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Collections</span>
+          <span class="panel-action" id="dashNewCol">+ New</span>
+        </div>
+        <div id="dashColList"></div>
+      </div>
+    </div>
+
+    <!-- Review Queue full page -->
+    <div class="page" id="page-queue">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Review queue</span>
+          <span class="panel-action" id="approveAllBtn">Approve all pending</span>
+        </div>
+        <div id="fullQueueList"></div>
+      </div>
+    </div>
+
+    <!-- AI Highlights full page -->
+    <div class="page" id="page-highlights">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">AI highlight clips</span>
+          <span class="panel-action">Generated by AI</span>
+        </div>
+        <div id="fullHlList"></div>
+      </div>
+    </div>
+
+    <!-- Collections full page -->
+    <div class="page" id="page-collections">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Collections</span>
+          <span class="panel-action" id="newColBtn">+ New collection</span>
+        </div>
+        <div id="fullColList"></div>
+        <div class="new-col-form" id="newColForm">
+          <input class="new-col-input" id="newColName" placeholder="Collection name…" />
+          <div class="new-col-row">
+            <button class="new-col-btn save" id="saveColBtn">Save</button>
+            <button class="new-col-btn cancel" id="cancelColBtn">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Placeholder pages -->
+    <div class="page" id="page-episodes"><div class="placeholder-page"><i class="ti ti-microphone"></i><h3>Episodes</h3><p>Browse all ingested episodes — coming soon</p></div></div>
+    <div class="page" id="page-published"><div class="placeholder-page"><i class="ti ti-circle-check"></i><h3>Published</h3><p>All published podcasts — coming soon</p></div></div>
+    <div class="page" id="page-settings"><div class="placeholder-page"><i class="ti ti-settings"></i><h3>Settings</h3><p>Editor preferences — coming soon</p></div></div>
+
+  </div>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav">
+    <div class="nav-tab active" data-page="dashboard">
+      <i class="ti ti-layout-dashboard"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-tab" data-page="queue">
+      <i class="ti ti-clock"></i>
+      <span>Queue</span>
+      <div class="tab-badge purple" id="queueBadge">12</div>
+    </div>
+    <div class="nav-tab" data-page="highlights">
+      <i class="ti ti-scissors"></i>
+      <span>Clips</span>
+      <div class="tab-badge" id="hlBadge">5</div>
+    </div>
+    <div class="nav-tab" data-page="collections">
+      <i class="ti ti-books"></i>
+      <span>Collections</span>
+    </div>
+    <div class="nav-tab" data-page="settings">
+      <i class="ti ti-settings"></i>
+      <span>Settings</span>
+    </div>
+  </nav>
+
+</div>
+
+<!-- Drawer overlay -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-logo">
+    <div class="drawer-logo-text">pod<span>wave</span></div>
+    <div class="drawer-role">Editor panel</div>
+  </div>
+  <div class="drawer-nav">
+    <div style="padding-top:4px">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" data-page="dashboard"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    </div>
+    <div style="padding-top:10px">
+      <div class="nav-label">Content</div>
+      <div class="nav-item" data-page="queue"><i class="ti ti-clock"></i> Review queue <span class="nav-badge purple" id="drawerQueueBadge">12</span></div>
+      <div class="nav-item" data-page="highlights"><i class="ti ti-scissors"></i> AI highlights <span class="nav-badge amber" id="drawerHlBadge">5</span></div>
+      <div class="nav-item" data-page="collections"><i class="ti ti-books"></i> Collections</div>
+      <div class="nav-item" data-page="episodes"><i class="ti ti-microphone"></i> Episodes</div>
+      <div class="nav-item" data-page="published"><i class="ti ti-circle-check"></i> Published</div>
+    </div>
+    <div style="padding-top:10px">
+      <div class="nav-label">System</div>
+      <div class="nav-item" data-page="settings"><i class="ti ti-settings"></i> Settings</div>
+    </div>
+  </div>
+  <div class="drawer-user">
+    <div class="user-avatar-sm">ED</div>
+    <div>
+      <div class="drawer-user-name">Editor</div>
+      <div class="drawer-user-role">editor@podwave.io</div>
+    </div>
+  </div>
+</div>
+
+<!-- Trim modal -->
+<div class="modal-overlay" id="trimModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Trim highlight clip</div>
+    <div class="modal-sub" id="trimModalSub">Edit timestamps for this clip</div>
+    <div class="trim-track">
+      <div class="trim-fill" id="trimFill" style="left:20%;width:16%"></div>
+    </div>
+    <div class="trim-times"><span id="trimStart">12:14</span><span id="trimEnd">14:48</span></div>
+    <div class="trim-inputs">
+      <div class="trim-field"><label>Start time</label><input id="trimStartInput" value="12:14" placeholder="mm:ss" /></div>
+      <div class="trim-field"><label>End time</label><input id="trimEndInput" value="14:48" placeholder="mm:ss" /></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" id="trimCancel">Cancel</button>
+      <button class="modal-btn save" id="trimSave">Save trim</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tag modal -->
+<div class="modal-overlay" id="tagModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Tag highlight clip</div>
+    <div class="modal-sub">Select all relevant tags for this clip</div>
+    <div class="tag-grid" id="tagGrid"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" id="tagCancel">Cancel</button>
+      <button class="modal-btn save" id="tagSave">Save tags</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── State ──
+const state = {
+  queue: [
+    { id: 1, title: 'The Knowledge Project', meta: 'Business · 89 eps · 2h ago', artClass: 'qa1', status: 'pending' },
+    { id: 2, title: 'Acquired', meta: 'Business · 122 eps · 5h ago', artClass: 'qa2', status: 'review' },
+    { id: 3, title: 'My First Million', meta: 'Business · 510 eps · 1d ago', artClass: 'qa3', status: 'pending' },
+    { id: 4, title: 'Darknet Diaries', meta: 'Technology · 148 eps · 6h ago', artClass: 'qa4', status: 'pending' },
+  ],
+  highlights: [
+    { id: 1, title: 'Hard Fork · Ep. 142 — "The model is already smarter than us"', snippet: 'Key segment: speaker discusses AGI timeline — high engagement markers detected', timeRange: '12:14 – 14:48', total: '56:10', clipLeft: '20%', clipWidth: '16%' },
+    { id: 2, title: 'Lex Fridman · Ep. 398 — "The nature of consciousness"', snippet: 'Key segment: debate on hard problem of consciousness — sentiment peak detected', timeRange: '41:05 – 42:55', total: '2:18:44', clipLeft: '35%', clipWidth: '12%' },
+    { id: 3, title: 'Huberman Lab · Ep. 71 — "Controlling dopamine"', snippet: 'Key segment: protocol for dopamine regulation — listener retention spike', timeRange: '28:00 – 31:10', total: '1:45:22', clipLeft: '27%', clipWidth: '10%' },
+  ],
+  collections: [
+    { id: 1, title: 'Staff picks — June', meta: '8 podcasts', status: 'published', iconClass: 'c1', icon: 'ti-trending-up' },
+    { id: 2, title: 'AI & technology deep dives', meta: '12 podcasts', status: 'published', iconClass: 'c2', icon: 'ti-brain' },
+    { id: 3, title: 'True crime essentials', meta: '6 podcasts', status: 'draft', iconClass: 'c3', icon: 'ti-flame' },
+    { id: 4, title: 'Best for beginners', meta: '5 podcasts', status: 'draft', iconClass: 'c1', icon: 'ti-heart' },
+  ],
+  activeTrimId: null,
+  activeTagId: null,
+};
+
+const TAGS = ['AI', 'Technology', 'Business', 'Science', 'Health', 'True Crime', 'Finance', 'Interview', 'Deep dive', 'Motivational', 'Educational', 'Must listen'];
+let selectedTags = [];
+
+// ── Render queue ──
+function renderQueueRow(item, container) {
+  const wrap = document.createElement('div');
+  wrap.className = 'qrow-wrap';
+  wrap.id = `qrow-wrap-${item.id}-${container.id}`;
+
+  const row = document.createElement('div');
+  row.className = 'qrow';
+  const statusLabel = { pending: 'Pending', review: 'In review', approved: 'Approved', rejected: 'Rejected' }[item.status];
+  row.innerHTML = `
+    <div class="qart ${item.artClass}"></div>
+    <div class="qinfo">
+      <div class="qtitle">${item.title}</div>
+      <div class="qmeta">${item.meta}</div>
+    </div>
+    <span class="qstatus ${item.status === 'review' ? 'review' : item.status}">${statusLabel}</span>`;
+  wrap.appendChild(row);
+
+  if (item.status !== 'approved' && item.status !== 'rejected') {
+    const actions = document.createElement('div');
+    actions.className = 'qrow-actions';
+    actions.innerHTML = `
+      <button class="qbtn approve" onclick="handleQueue(${item.id},'approve')"><i class="ti ti-check"></i> Approve</button>
+      <button class="qbtn reject" onclick="handleQueue(${item.id},'reject')"><i class="ti ti-x"></i> Reject</button>
+      <button class="qbtn" onclick="toast('info','Editing...')"><i class="ti ti-edit"></i> Edit</button>`;
+    wrap.appendChild(actions);
+  } else {
+    const actions = document.createElement('div');
+    actions.className = 'qrow-actions';
+    actions.innerHTML = `<button class="qbtn" onclick="toast('info','Editing ${item.title}…')"><i class="ti ti-edit"></i> Edit</button>`;
+    wrap.appendChild(actions);
+  }
+  container.appendChild(wrap);
+}
+
+function renderQueues() {
+  const dash = document.getElementById('dashQueueList');
+  const full = document.getElementById('fullQueueList');
+  dash.innerHTML = ''; full.innerHTML = '';
+  state.queue.slice(0, 3).forEach(item => renderQueueRow(item, dash));
+  state.queue.forEach(item => renderQueueRow(item, full));
+}
+
+function handleQueue(id, action) {
+  const item = state.queue.find(q => q.id === id);
+  if (!item) return;
+  item.status = action === 'approve' ? 'approved' : 'rejected';
+  renderQueues();
+  const pending = state.queue.filter(q => q.status === 'pending' || q.status === 'review').length;
+  updateBadge('queueBadge', pending);
+  updateBadge('drawerQueueBadge', pending);
+  document.getElementById('kpi-pending').textContent = pending;
+  if (action === 'approve') {
+    const pub = parseInt(document.getElementById('kpi-published').textContent.replace(/,/g,'')) + 1;
+    document.getElementById('kpi-published').textContent = pub.toLocaleString();
+    toast('success', `"${item.title}" approved`);
+  } else {
+    toast('error', `"${item.title}" rejected`);
+  }
+}
+
+document.getElementById('approveAllBtn').addEventListener('click', () => {
+  state.queue.filter(q => q.status === 'pending' || q.status === 'review').forEach(q => { q.status = 'approved'; });
+  renderQueues();
+  updateBadge('queueBadge', 0);
+  updateBadge('drawerQueueBadge', 0);
+  document.getElementById('kpi-pending').textContent = '0';
+  toast('success', 'All pending items approved');
+});
+
+// ── Render highlights ──
+function renderHlRow(item, container) {
+  const el = document.createElement('div');
+  el.className = 'hl-item';
+  el.id = `hl-${item.id}-${container.id}`;
+  el.innerHTML = `
+    <div class="hl-row">
+      <div class="hl-icon"><i class="ti ti-sparkles"></i></div>
+      <div style="flex:1;min-width:0">
+        <div class="hl-title">${item.title}</div>
+        <div class="hl-snippet">${item.snippet}</div>
+        <div class="hl-bar"><div class="hl-clip" style="left:${item.clipLeft};width:${item.clipWidth}"></div></div>
+        <div class="hl-times"><span>0:00</span><span>${item.timeRange}</span><span>${item.total}</span></div>
+        <div class="hl-btns">
+          <button class="qbtn approve" onclick="acceptHL(${item.id})"><i class="ti ti-check"></i> Accept</button>
+          <button class="qbtn reject" onclick="rejectHL(${item.id})"><i class="ti ti-x"></i> Reject</button>
+          <button class="qbtn" onclick="openTrim(${item.id})"><i class="ti ti-adjustments-horizontal"></i> Trim</button>
+          <button class="qbtn" onclick="openTag(${item.id})"><i class="ti ti-tag"></i> Tag</button>
+        </div>
+      </div>
+    </div>`;
+  container.appendChild(el);
+}
+
+function renderHighlights() {
+  const dash = document.getElementById('dashHlList');
+  const full = document.getElementById('fullHlList');
+  dash.innerHTML = ''; full.innerHTML = '';
+  state.highlights.slice(0, 2).forEach(h => renderHlRow(h, dash));
+  state.highlights.forEach(h => renderHlRow(h, full));
+}
+
+function acceptHL(id) { removeHL(id); toast('success', 'Highlight clip accepted'); }
+function rejectHL(id) { removeHL(id); toast('error', 'Highlight clip rejected'); }
+function removeHL(id) {
+  document.querySelectorAll(`[id^="hl-${id}-"]`).forEach(el => {
+    el.classList.add('dismissed');
+    setTimeout(() => el.remove(), 310);
+  });
+  state.highlights = state.highlights.filter(h => h.id !== id);
+  updateBadge('hlBadge', state.highlights.length);
+  updateBadge('drawerHlBadge', state.highlights.length);
+  document.getElementById('kpi-highlights').textContent = state.highlights.length;
+}
+
+// ── Trim modal ──
+function openTrim(id) {
+  const h = state.highlights.find(h => h.id === id);
+  if (!h) return;
+  state.activeTrimId = id;
+  document.getElementById('trimModalSub').textContent = h.title;
+  document.getElementById('trimFill').style.left = h.clipLeft;
+  document.getElementById('trimFill').style.width = h.clipWidth;
+  const [start, end] = h.timeRange.split(' – ');
+  document.getElementById('trimStart').textContent = start;
+  document.getElementById('trimEnd').textContent = end;
+  document.getElementById('trimStartInput').value = start;
+  document.getElementById('trimEndInput').value = end;
+  document.getElementById('trimModal').classList.add('open');
+}
+document.getElementById('trimCancel').addEventListener('click', () => document.getElementById('trimModal').classList.remove('open'));
+document.getElementById('trimSave').addEventListener('click', () => {
+  const h = state.highlights.find(h => h.id === state.activeTrimId);
+  if (h) {
+    h.timeRange = `${document.getElementById('trimStartInput').value} – ${document.getElementById('trimEndInput').value}`;
+    renderHighlights();
+    toast('success', 'Trim saved');
+  }
+  document.getElementById('trimModal').classList.remove('open');
+});
+
+// ── Tag modal ──
+function openTag(id) {
+  state.activeTagId = id;
+  selectedTags = [];
+  const grid = document.getElementById('tagGrid');
+  grid.innerHTML = '';
+  TAGS.forEach(tag => {
+    const chip = document.createElement('div');
+    chip.className = 'tag-chip';
+    chip.textContent = tag;
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('selected');
+      if (chip.classList.contains('selected')) selectedTags.push(tag);
+      else selectedTags = selectedTags.filter(t => t !== tag);
+    });
+    grid.appendChild(chip);
+  });
+  document.getElementById('tagModal').classList.add('open');
+}
+document.getElementById('tagCancel').addEventListener('click', () => document.getElementById('tagModal').classList.remove('open'));
+document.getElementById('tagSave').addEventListener('click', () => {
+  document.getElementById('tagModal').classList.remove('open');
+  toast('success', selectedTags.length ? `Tagged: ${selectedTags.join(', ')}` : 'No tags selected');
+});
+
+// ── Collections ──
+function renderCollections() {
+  const dash = document.getElementById('dashColList');
+  const full = document.getElementById('fullColList');
+  dash.innerHTML = ''; full.innerHTML = '';
+  state.collections.forEach(col => {
+    [dash, full].forEach(container => {
+      const el = document.createElement('div');
+      el.className = 'col-item';
+      el.innerHTML = `
+        <div class="col-icon ${col.iconClass}"><i class="ti ${col.icon}"></i></div>
+        <div style="flex:1;min-width:0">
+          <div class="col-title">${col.title}</div>
+          <div class="col-meta">${col.meta} <span class="col-status ${col.status === 'published' ? 'pub' : 'draft'}">${col.status}</span></div>
+        </div>
+        <span class="col-edit" onclick="toast('info','Editing &quot;${col.title}&quot;…')"><i class="ti ti-edit"></i></span>`;
+      container.appendChild(el);
+    });
+  });
+}
+
+['dashNewCol', 'newColBtn'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', () => {
+    switchPage('collections');
+    document.getElementById('newColForm').classList.add('open');
+    setTimeout(() => document.getElementById('newColName').focus(), 100);
+  });
+});
+document.getElementById('saveColBtn').addEventListener('click', () => {
+  const name = document.getElementById('newColName').value.trim();
+  if (!name) return;
+  const icons = ['ti-star','ti-bookmark','ti-music','ti-headphones','ti-award'];
+  const classes = ['c1','c2','c3'];
+  state.collections.push({
+    id: Date.now(), title: name, meta: '0 podcasts',
+    status: 'draft', iconClass: classes[Math.floor(Math.random()*3)],
+    icon: icons[Math.floor(Math.random()*icons.length)]
+  });
+  document.getElementById('newColName').value = '';
+  document.getElementById('newColForm').classList.remove('open');
+  renderCollections();
+  toast('success', `Collection "${name}" created`);
+});
+document.getElementById('cancelColBtn').addEventListener('click', () => {
+  document.getElementById('newColForm').classList.remove('open');
+  document.getElementById('newColName').value = '';
+});
+
+// ── Drawer ──
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('menuBtn').addEventListener('click', openDrawer);
+document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+
+// ── Notifications ──
+document.getElementById('notifBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const panel = document.getElementById('notifPanel');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  document.getElementById('notifDot').style.display = 'none';
+});
+document.addEventListener('click', () => document.getElementById('notifPanel').classList.remove('open'));
+document.getElementById('notifPanel').addEventListener('click', e => e.stopPropagation());
+
+// ── Navigation ──
+const pageMeta = {
+  dashboard: { title: 'Editorial dashboard', sub: 'Saturday, June 6 · 3 items need your attention' },
+  queue: { title: 'Review queue', sub: 'Approve, reject, or edit incoming podcasts' },
+  highlights: { title: 'AI highlights', sub: 'AI-generated clip suggestions awaiting review' },
+  collections: { title: 'Collections', sub: 'Curate and publish podcast collections' },
+  episodes: { title: 'Episodes', sub: 'Browse all ingested episodes' },
+  published: { title: 'Published', sub: 'All published podcasts' },
+  settings: { title: 'Settings', sub: 'Editor preferences' },
+};
+
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab, .nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  document.querySelectorAll(`[data-page="${page}"]`).forEach(el => el.classList.add('active'));
+  const m = pageMeta[page] || { title: page, sub: '' };
+  document.getElementById('pageTitle').textContent = m.title;
+  document.getElementById('pageSub').textContent = m.sub;
+  // Scroll to top on page switch
+  document.querySelector('.content').scrollTop = 0;
+  closeDrawer();
+}
+
+document.querySelectorAll('.nav-tab, .nav-item').forEach(el => {
+  el.addEventListener('click', () => switchPage(el.dataset.page));
+});
+document.getElementById('viewAllQueue').addEventListener('click', () => switchPage('queue'));
+document.getElementById('viewAllHL').addEventListener('click', () => switchPage('highlights'));
+
+// ── Badges ──
+function updateBadge(id, count) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = count;
+  el.style.display = count > 0 ? '' : 'none';
+}
+
+// ── Toast ──
+function toast(type, msg) {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icon = { success: 'ti-circle-check', error: 'ti-alert-circle', info: 'ti-info-circle' }[type];
+  el.innerHTML = `<i class="ti ${icon}"></i> ${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(8px)';
+    el.style.transition = 'all 0.2s ease';
+    setTimeout(() => el.remove(), 200);
+  }, 2800);
+}
+
+// ── Init ──
+renderQueues();
+renderHighlights();
+renderCollections();
+</script>
+</body>
+</html>

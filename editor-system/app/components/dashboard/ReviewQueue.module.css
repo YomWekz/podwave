@@ -1,0 +1,206 @@
+/* Review Queue Styles - Extracted from editor_desktop.html */
+
+.panel {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.panelHead {
+  padding: 11px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panelTitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.panelAction {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--mono);
+  transition: opacity 0.15s;
+}
+
+.panelAction:hover {
+  opacity: 0.7;
+}
+
+.queueList {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.qrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  transition: all 0.3s ease;
+}
+
+.qrow:last-child {
+  border-bottom: none;
+}
+
+.qrow:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.qrow.dismissed {
+  opacity: 0;
+  transform: translateX(12px);
+  pointer-events: none;
+}
+
+.qart {
+  width: 38px;
+  height: 38px;
+  border-radius: 7px;
+  flex-shrink: 0;
+}
+
+.qa1 { background: #1D9E75; }
+.qa2 { background: #534AB7; }
+.qa3 { background: #993C1D; }
+.qa4 { background: #185FA5; }
+
+.qinfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.qtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.qmeta {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 1px;
+  font-family: var(--mono);
+}
+
+.qstatus {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+  font-family: var(--mono);
+  flex-shrink: 0;
+}
+
+.qstatus.pending {
+  background: var(--amber-dim);
+  color: var(--amber);
+}
+
+.qstatus.review {
+  background: rgba(127,119,221,0.1);
+  color: var(--accent-light);
+}
+
+.qstatus.approved {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.qstatus.rejected {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+.qbtns {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.qbtn {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font);
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.qbtn:hover {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.8);
+}
+
+.qbtn.approve {
+  border-color: rgba(93,202,165,0.25);
+  color: var(--green);
+}
+
+.qbtn.approve:hover {
+  background: var(--green-dim);
+}
+
+.qbtn.reject {
+  border-color: rgba(226,75,74,0.25);
+  color: var(--red);
+}
+
+.qbtn.reject:hover {
+  background: var(--red-dim);
+}
+
+.qbtn i {
+  font-size: 12px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .queueList {
+    max-height: none;
+  }
+  
+  .qrow {
+    padding: 11px 14px;
+    gap: 10px;
+  }
+  
+  .qbtns {
+    flex-wrap: wrap;
+  }
+  
+  .qbtn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .qrow {
+    flex-wrap: wrap;
+  }
+  
+  .qbtns {
+    width: 100%;
+    margin-top: 8px;
+  }
+}

@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PodWave — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #0c0c10;
+  --surface: #161619;
+  --surface2: #1c1c21;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.04);
+  --text: #f0eee8;
+  --text-muted: rgba(255,255,255,0.35);
+  --text-dim: rgba(255,255,255,0.2);
+  --accent: #D85A30;
+  --accent-dim: rgba(216,90,48,0.08);
+  --accent-border: rgba(216,90,48,0.18);
+  --green: #5DCAA5;
+  --green-dim: rgba(93,202,165,0.08);
+  --green-border: rgba(93,202,165,0.15);
+  --red: #E24B4A;
+  --red-dim: rgba(226,75,74,0.1);
+  --yellow: #EF9F27;
+  --yellow-dim: rgba(239,159,39,0.12);
+  --purple: #7F77DD;
+  --purple-dim: rgba(127,119,221,0.1);
+  --font: 'Sora', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #09090d;
+  font-family: var(--font);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ── Layout ── */
+.adm {
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  min-height: 820px;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 210px;
+  flex-shrink: 0;
+  border-right: 0.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.logo-wrap {
+  padding: 20px 18px 16px;
+  border-bottom: 0.5px solid var(--border);
+}
+.logo {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+.logo span { color: var(--accent); }
+.logo-role {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  font-family: var(--mono);
+  letter-spacing: 0.05em;
+}
+
+.nav-section { padding: 14px 0; }
+.nav-section + .nav-section { padding-top: 0; }
+.nav-label {
+  font-size: 9.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  padding: 0 18px 8px;
+  text-transform: uppercase;
+  font-family: var(--mono);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.38);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.nav-item i { font-size: 16px; flex-shrink: 0; }
+.nav-item:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.03); }
+.nav-item.active {
+  color: #fff;
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+}
+.nav-badge {
+  margin-left: auto;
+  font-size: 10px;
+  background: rgba(226,75,74,0.15);
+  color: var(--red);
+  padding: 2px 7px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-family: var(--mono);
+  transition: transform 0.2s ease;
+}
+.nav-badge.warn { background: var(--yellow-dim); color: var(--yellow); }
+
+.sidebar-user {
+  margin-top: auto;
+  padding: 14px 18px;
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.user-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+  color: #4A1B0C;
+  flex-shrink: 0;
+}
+.user-name { font-size: 12px; font-weight: 500; color: #fff; }
+.user-email { font-size: 10px; color: rgba(255,255,255,0.28); font-family: var(--mono); }
+
+/* ── Main ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 0.5px solid var(--border);
+}
+.topbar-title { font-size: 15px; font-weight: 500; color: #fff; }
+.topbar-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-family: var(--mono); }
+.sync-badge {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--green);
+  background: var(--green-dim);
+  padding: 5px 11px; border-radius: 6px;
+  border: 0.5px solid var(--green-border);
+  font-family: var(--mono);
+}
+.sync-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Content ── */
+.content {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── KPI Grid ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.kpi {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  transition: border-color 0.2s;
+}
+.kpi:hover { border-color: rgba(255,255,255,0.12); }
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--mono);
+}
+.kpi-label i { font-size: 13px; }
+.kpi-val { font-size: 26px; font-weight: 500; color: #fff; line-height: 1; }
+.kpi-val.coral { color: var(--accent); }
+.kpi-val.red { color: var(--red); }
+.kpi-val.green { color: var(--green); }
+.kpi-change { font-size: 10px; color: var(--text-dim); margin-top: 5px; font-family: var(--mono); }
+
+/* ── Add Feed Panel ── */
+.add-panel {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  padding: 14px 16px;
+}
+.add-panel-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.add-row { display: flex; gap: 8px; align-items: center; }
+.add-input {
+  flex: 1;
+  background: var(--bg);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 12px;
+  font-family: var(--mono);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.add-input::placeholder { color: rgba(255,255,255,0.22); }
+.add-input:focus { border-color: var(--accent); }
+.add-select {
+  background: var(--bg);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  font-family: var(--mono);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.add-select:focus { border-color: var(--accent); }
+.add-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 5px;
+  transition: background 0.15s, transform 0.1s;
+}
+.add-btn:hover { background: #c54f28; }
+.add-btn:active { transform: scale(0.97); }
+.add-btn i { font-size: 13px; }
+
+/* ── Toast ── */
+.toast-container {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 999;
+}
+.toast {
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+  animation: toastIn 0.25s ease;
+  max-width: 280px;
+}
+.toast.success { border-left: 2px solid var(--green); }
+.toast.error { border-left: 2px solid var(--red); }
+.toast.info { border-left: 2px solid var(--accent); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Two col ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* ── Panel ── */
+.panel {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.panel-head {
+  padding: 11px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.panel-action {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--mono);
+  transition: opacity 0.15s;
+}
+.panel-action:hover { opacity: 0.7; }
+
+/* ── Feed rows ── */
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  font-size: 12px;
+  transition: background 0.12s;
+}
+.feed-row:last-child { border-bottom: none; }
+.feed-row:hover { background: rgba(255,255,255,0.02); }
+.fdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.fdot.ok { background: var(--green); }
+.fdot.fail { background: var(--red); }
+.fdot.pend { background: var(--yellow); animation: pulse 1.5s ease infinite; }
+.furl {
+  color: rgba(255,255,255,0.55);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-family: var(--mono);
+}
+.ftag {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 0.5px solid var(--accent-border);
+  white-space: nowrap;
+  font-family: var(--mono);
+}
+.feps { color: var(--text-dim); font-size: 10px; min-width: 52px; text-align: right; font-family: var(--mono); }
+.fbtns { display: flex; gap: 4px; }
+.ficon {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  background: none;
+  transition: all 0.12s;
+}
+.ficon:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); }
+.ficon.retry { border-color: rgba(239,159,39,0.25); color: var(--yellow); }
+.ficon.retry:hover { background: var(--yellow-dim); }
+.ficon.del { border-color: rgba(226,75,74,0.2); color: var(--red); }
+.ficon.del:hover { background: var(--red-dim); }
+
+/* ── Confirm dialog ── */
+.dialog-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.15s;
+}
+.dialog-overlay.open { opacity: 1; pointer-events: all; }
+.dialog {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  min-width: 280px;
+  transform: translateY(6px);
+  transition: transform 0.15s;
+}
+.dialog-overlay.open .dialog { transform: translateY(0); }
+.dialog-title { font-size: 13px; font-weight: 500; color: #fff; margin-bottom: 6px; }
+.dialog-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 18px; font-family: var(--mono); }
+.dialog-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.dialog-btn {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.dialog-btn.cancel { background: none; color: var(--text-muted); }
+.dialog-btn.cancel:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.dialog-btn.confirm { background: var(--red); border-color: var(--red); color: #fff; }
+.dialog-btn.confirm:hover { background: #c43a39; }
+
+/* ── Log rows ── */
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  font-size: 11px;
+  transition: background 0.12s;
+}
+.log-row:last-child { border-bottom: none; }
+.log-row:hover { background: rgba(255,255,255,0.02); }
+.lstatus {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+  min-width: 58px;
+  text-align: center;
+  white-space: nowrap;
+  font-family: var(--mono);
+}
+.lstatus.s { background: var(--green-dim); color: var(--green); }
+.lstatus.e { background: var(--red-dim); color: var(--red); }
+.lstatus.r { background: var(--purple-dim); color: var(--purple); }
+.lname { color: rgba(255,255,255,0.65); flex: 1; font-size: 11px; }
+.leps { color: var(--text-dim); font-size: 10px; min-width: 100px; text-align: right; font-family: var(--mono); }
+.ltime { color: var(--text-dim); font-size: 10px; min-width: 58px; text-align: right; font-family: var(--mono); }
+
+/* ── Page views (for nav switching) ── */
+.page { display: none; }
+.page.active { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Placeholder pages ── */
+.placeholder-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  gap: 10px;
+  padding: 60px;
+  text-align: center;
+}
+.placeholder-page i { font-size: 36px; opacity: 0.3; }
+.placeholder-page h3 { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.4); }
+.placeholder-page p { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
+
+/* ── Failed Jobs page ── */
+.failed-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  transition: background 0.12s;
+}
+.failed-row:last-child { border-bottom: none; }
+.failed-row:hover { background: rgba(255,255,255,0.02); }
+.failed-icon {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--red-dim);
+  border: 0.5px solid rgba(226,75,74,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--red);
+  flex-shrink: 0; margin-top: 1px;
+}
+.failed-info { flex: 1; }
+.failed-name { font-size: 12px; color: rgba(255,255,255,0.75); font-weight: 500; margin-bottom: 3px; }
+.failed-reason { font-size: 11px; color: var(--red); font-family: var(--mono); margin-bottom: 3px; }
+.failed-meta { font-size: 10px; color: var(--text-dim); font-family: var(--mono); }
+.retry-btn {
+  background: var(--yellow-dim);
+  border: 0.5px solid rgba(239,159,39,0.25);
+  color: var(--yellow);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-family: var(--mono);
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  transition: all 0.12s;
+  flex-shrink: 0;
+  align-self: center;
+}
+.retry-btn:hover { background: rgba(239,159,39,0.2); }
+.retry-btn.loading { opacity: 0.6; pointer-events: none; }
+.retry-btn.loading i { animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Scrollbar ── */
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-track { background: transparent; }
+.content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="adm">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo-wrap">
+      <div class="logo">pod<span>wave</span></div>
+      <div class="logo-role">Admin panel</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" data-page="dashboard">
+        <i class="ti ti-layout-dashboard"></i> Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Feeds & Jobs</div>
+      <div class="nav-item" data-page="rss">
+        <i class="ti ti-rss"></i> RSS Feeds
+      </div>
+      <div class="nav-item" data-page="logs">
+        <i class="ti ti-list-check"></i> Job Logs
+      </div>
+      <div class="nav-item" data-page="failed">
+        <i class="ti ti-alert-triangle"></i> Failed Jobs
+        <span class="nav-badge" id="failedBadge">3</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Data</div>
+      <div class="nav-item" data-page="raw">
+        <i class="ti ti-database"></i> Raw Data
+      </div>
+      <div class="nav-item" data-page="stats">
+        <i class="ti ti-chart-bar"></i> Sync Stats
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">System</div>
+      <div class="nav-item" data-page="settings">
+        <i class="ti ti-settings"></i> Settings
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">AD</div>
+      <div>
+        <div class="user-name">Admin</div>
+        <div class="user-email">admin@podwave.io</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="pageTitle">Dashboard</div>
+        <div class="topbar-sub" id="pageSub">Thursday, June 1 · Last sync 4 minutes ago</div>
+      </div>
+      <div>
+        <div class="sync-badge"><div class="sync-dot"></div> All systems operational</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Dashboard page -->
+      <div class="page active" id="page-dashboard">
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label"><i class="ti ti-microphone"></i> Total Podcasts</div>
+            <div class="kpi-val" id="kpi-podcasts">1,284</div>
+            <div class="kpi-change">+12 this week</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label"><i class="ti ti-player-play"></i> Total Episodes</div>
+            <div class="kpi-val" id="kpi-episodes">48,920</div>
+            <div class="kpi-change">+340 this week</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label"><i class="ti ti-alert-triangle"></i> Failed Jobs</div>
+            <div class="kpi-val red" id="kpi-failed">3</div>
+            <div class="kpi-change">Needs attention</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label"><i class="ti ti-refresh"></i> Active Feeds</div>
+            <div class="kpi-val green" id="kpi-active">24</div>
+            <div class="kpi-change" id="kpi-active-sub">3 pending · 3 failed</div>
+          </div>
+        </div>
+
+        <!-- Add Feed -->
+        <div class="add-panel">
+          <div class="add-panel-label">Add RSS Feed</div>
+          <div class="add-row">
+            <input class="add-input" id="feedUrlInput" placeholder="Paste RSS feed URL — e.g. https://feeds.simplecast.com/abc123" />
+            <select class="add-select" id="feedCategorySelect">
+              <option value="Tech">Technology</option>
+              <option value="Business">Business</option>
+              <option value="Crime">True Crime</option>
+              <option value="Science">Science</option>
+              <option value="Health">Health</option>
+              <option value="Comedy">Comedy</option>
+              <option value="News">News</option>
+            </select>
+            <button class="add-btn" id="addFeedBtn">
+              <i class="ti ti-plus"></i> Add Feed
+            </button>
+          </div>
+        </div>
+
+        <!-- Two col panels -->
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">RSS Feed Manager</span>
+              <span class="panel-action" id="viewAllFeeds">View all 30</span>
+            </div>
+            <div id="feedList">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">Ingestion Job Log</span>
+              <span class="panel-action">Last 24 hours</span>
+            </div>
+            <div id="logList">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Failed Jobs page -->
+      <div class="page" id="page-failed">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">Failed Jobs</span>
+            <span class="panel-action" id="retryAllBtn">Retry All</span>
+          </div>
+          <div id="failedList">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Placeholder pages -->
+      <div class="page" id="page-rss">
+        <div class="placeholder-page">
+          <i class="ti ti-rss"></i>
+          <h3>RSS Feeds</h3>
+          <p>Full feed manager view — coming soon</p>
+        </div>
+      </div>
+      <div class="page" id="page-logs">
+        <div class="placeholder-page">
+          <i class="ti ti-list-check"></i>
+          <h3>Job Logs</h3>
+          <p>Full ingestion log history — coming soon</p>
+        </div>
+      </div>
+      <div class="page" id="page-raw">
+        <div class="placeholder-page">
+          <i class="ti ti-database"></i>
+          <h3>Raw Data Viewer</h3>
+          <p>Browse raw podcast & episode JSON data — coming soon</p>
+        </div>
+      </div>
+      <div class="page" id="page-stats">
+        <div class="placeholder-page">
+          <i class="ti ti-chart-bar"></i>
+          <h3>Sync Stats</h3>
+          <p>Charts and sync history — coming soon</p>
+        </div>
+      </div>
+      <div class="page" id="page-settings">
+        <div class="placeholder-page">
+          <i class="ti ti-settings"></i>
+          <h3>Settings</h3>
+          <p>System configuration — coming soon</p>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div>
+
+<!-- Confirm Dialog -->
+<div class="dialog-overlay" id="deleteDialog">
+  <div class="dialog">
+    <div class="dialog-title">Remove feed?</div>
+    <div class="dialog-sub" id="dialogFeedUrl">This cannot be undone.</div>
+    <div class="dialog-btns">
+      <button class="dialog-btn cancel" id="dialogCancel">Cancel</button>
+      <button class="dialog-btn confirm" id="dialogConfirm">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── State ──
+const state = {
+  feeds: [
+    { id: 1, url: 'feeds.simplecast.com/54nAGcIl', tag: 'Tech', eps: '142 eps', status: 'ok' },
+    { id: 2, url: 'rss.art19.com/crime-junkie', tag: 'Crime', eps: '310 eps', status: 'fail' },
+    { id: 3, url: 'anchor.fm/s/huberman-lab/rss', tag: 'Health', eps: '—', status: 'pend' },
+    { id: 4, url: 'feeds.megaphone.fm/the-daily', tag: 'News', eps: '1,203 eps', status: 'ok' },
+  ],
+  logs: [
+    { status: 's', name: 'Hard Fork — full sync', eps: '142 eps ingested', time: '4 min ago' },
+    { status: 'r', name: 'Huberman Lab — initial fetch', eps: 'fetching...', time: 'just now' },
+    { status: 'e', name: 'Crime Junkie — feed timeout', eps: '0 eps ingested', time: '2h ago' },
+    { status: 's', name: 'The Daily — incremental sync', eps: '3 new eps', time: '1h ago' },
+    { status: 'e', name: 'Acquired — SSL cert invalid', eps: '0 eps ingested', time: '3h ago' },
+  ],
+  failed: [
+    { id: 1, name: 'Crime Junkie', reason: 'ERR: feed timeout after 30s', meta: 'rss.art19.com/crime-junkie · Failed 2h ago · 3 retries' },
+    { id: 2, name: 'Acquired Podcast', reason: 'ERR: SSL certificate invalid', meta: 'feeds.acquired.fm/rss · Failed 3h ago · 1 retry' },
+    { id: 3, name: 'Darknet Diaries', reason: 'ERR: HTTP 404 not found', meta: 'feeds.darknetdiaries.com/rss · Failed 5h ago · 0 retries' },
+  ],
+  failedCount: 3,
+  pendingCount: 3,
+  nextId: 10,
+  deletePendingId: null,
+};
+
+// ── Render feeds ──
+function renderFeeds() {
+  const container = document.getElementById('feedList');
+  container.innerHTML = '';
+  state.feeds.forEach(feed => {
+    const row = document.createElement('div');
+    row.className = 'feed-row';
+    row.dataset.id = feed.id;
+    row.innerHTML = `
+      <div class="fdot ${feed.status}"></div>
+      <div class="furl" title="${feed.url}">${feed.url}</div>
+      <span class="ftag">${feed.tag}</span>
+      <div class="feps">${feed.eps}</div>
+      <div class="fbtns">
+        ${feed.status === 'fail'
+          ? `<button class="ficon retry" title="Retry" onclick="retryFeed(${feed.id})"><i class="ti ti-refresh"></i></button>`
+          : `<button class="ficon" title="Refresh" onclick="refreshFeed(${feed.id})"><i class="ti ti-refresh"></i></button>`
+        }
+        <button class="ficon" title="View"><i class="ti ti-eye"></i></button>
+        <button class="ficon del" title="Remove" onclick="confirmDelete(${feed.id}, '${feed.url}')"><i class="ti ti-trash"></i></button>
+      </div>`;
+    container.appendChild(row);
+  });
+}
+
+// ── Render logs ──
+function renderLogs() {
+  const container = document.getElementById('logList');
+  container.innerHTML = '';
+  state.logs.forEach(log => {
+    const statusLabel = { s: 'Success', e: 'Error', r: 'Running' }[log.status];
+    const row = document.createElement('div');
+    row.className = 'log-row';
+    row.innerHTML = `
+      <span class="lstatus ${log.status}">${statusLabel}</span>
+      <span class="lname">${log.name}</span>
+      <span class="leps">${log.eps}</span>
+      <span class="ltime">${log.time}</span>`;
+    container.appendChild(row);
+  });
+}
+
+// ── Render failed jobs ──
+function renderFailed() {
+  const container = document.getElementById('failedList');
+  container.innerHTML = '';
+  if (state.failed.length === 0) {
+    container.innerHTML = '<div style="padding:24px;text-align:center;font-size:12px;color:var(--text-dim);font-family:var(--mono)">No failed jobs 🎉</div>';
+    return;
+  }
+  state.failed.forEach(job => {
+    const row = document.createElement('div');
+    row.className = 'failed-row';
+    row.id = `failed-${job.id}`;
+    row.innerHTML = `
+      <div class="failed-icon"><i class="ti ti-alert-triangle"></i></div>
+      <div class="failed-info">
+        <div class="failed-name">${job.name}</div>
+        <div class="failed-reason">${job.reason}</div>
+        <div class="failed-meta">${job.meta}</div>
+      </div>
+      <button class="retry-btn" onclick="retryJob(${job.id}, this)">
+        <i class="ti ti-refresh"></i> Retry
+      </button>`;
+    container.appendChild(row);
+  });
+}
+
+// ── Update counters ──
+function updateCounters() {
+  document.getElementById('kpi-failed').textContent = state.failedCount;
+  document.getElementById('failedBadge').textContent = state.failedCount;
+  if (state.failedCount === 0) document.getElementById('failedBadge').style.display = 'none';
+}
+
+// ── Add feed ──
+document.getElementById('addFeedBtn').addEventListener('click', () => {
+  const input = document.getElementById('feedUrlInput');
+  const select = document.getElementById('feedCategorySelect');
+  const url = input.value.trim();
+  if (!url) {
+    input.style.borderColor = 'var(--red)';
+    setTimeout(() => input.style.borderColor = '', 1200);
+    toast('error', 'Please enter a feed URL');
+    return;
+  }
+  const cleanUrl = url.replace(/^https?:\/\//, '');
+  state.feeds.unshift({ id: state.nextId++, url: cleanUrl, tag: select.value, eps: '—', status: 'pend' });
+  state.pendingCount++;
+  document.getElementById('kpi-active-sub').textContent = `${state.pendingCount} pending · ${state.failedCount} failed`;
+  renderFeeds();
+  input.value = '';
+  toast('info', `Feed added: ${cleanUrl}`);
+
+  // Add log entry
+  state.logs.unshift({ status: 'r', name: `${cleanUrl} — initial fetch`, eps: 'fetching...', time: 'just now' });
+  renderLogs();
+});
+
+// ── Delete feed ──
+let deleteResolve = null;
+
+function confirmDelete(id, url) {
+  state.deletePendingId = id;
+  document.getElementById('dialogFeedUrl').textContent = url;
+  document.getElementById('deleteDialog').classList.add('open');
+}
+
+document.getElementById('dialogCancel').addEventListener('click', () => {
+  document.getElementById('deleteDialog').classList.remove('open');
+  state.deletePendingId = null;
+});
+
+document.getElementById('dialogConfirm').addEventListener('click', () => {
+  const id = state.deletePendingId;
+  const feed = state.feeds.find(f => f.id === id);
+  state.feeds = state.feeds.filter(f => f.id !== id);
+  document.getElementById('deleteDialog').classList.remove('open');
+  renderFeeds();
+  toast('success', `Feed removed`);
+  document.getElementById('kpi-active').textContent = state.feeds.filter(f => f.status === 'ok').length;
+});
+
+// ── Retry feed ──
+function retryFeed(id) {
+  const feed = state.feeds.find(f => f.id === id);
+  if (!feed) return;
+  feed.status = 'pend';
+  renderFeeds();
+  toast('info', `Retrying ${feed.url}…`);
+  setTimeout(() => {
+    feed.status = 'ok';
+    feed.eps = '310 eps';
+    state.failedCount = Math.max(0, state.failedCount - 1);
+    updateCounters();
+    renderFeeds();
+    state.logs.unshift({ status: 's', name: `${feed.url} — retry sync`, eps: '310 eps ingested', time: 'just now' });
+    renderLogs();
+    toast('success', `${feed.url} synced successfully`);
+  }, 2200);
+}
+
+function refreshFeed(id) {
+  const feed = state.feeds.find(f => f.id === id);
+  if (!feed) return;
+  toast('info', `Refreshing ${feed.url}…`);
+}
+
+// ── Retry failed job ──
+function retryJob(id, btn) {
+  btn.classList.add('loading');
+  btn.innerHTML = '<i class="ti ti-refresh"></i> Retrying…';
+  setTimeout(() => {
+    state.failed = state.failed.filter(j => j.id !== id);
+    state.failedCount = Math.max(0, state.failedCount - 1);
+    updateCounters();
+    renderFailed();
+    toast('success', 'Job retried successfully');
+    // Update feed if applicable
+    const failFeed = state.feeds.find(f => f.status === 'fail');
+    if (failFeed) { failFeed.status = 'ok'; failFeed.eps = '310 eps'; renderFeeds(); }
+  }, 1800);
+}
+
+// ── Retry all ──
+document.getElementById('retryAllBtn').addEventListener('click', () => {
+  if (state.failed.length === 0) return;
+  const btns = document.querySelectorAll('.retry-btn');
+  btns.forEach(b => { b.classList.add('loading'); b.innerHTML = '<i class="ti ti-refresh"></i> Retrying…'; });
+  setTimeout(() => {
+    state.failed = [];
+    state.failedCount = 0;
+    updateCounters();
+    renderFailed();
+    toast('success', 'All failed jobs retried');
+  }, 2000);
+});
+
+// ── View all feeds → navigate ──
+document.getElementById('viewAllFeeds').addEventListener('click', () => {
+  switchPage('rss');
+});
+
+// ── Navigation ──
+const pageTitles = {
+  dashboard: { title: 'Dashboard', sub: 'Thursday, June 1 · Last sync 4 minutes ago' },
+  rss: { title: 'RSS Feeds', sub: 'Manage all active, pending, and failed feeds' },
+  logs: { title: 'Job Logs', sub: 'Full ingestion log history' },
+  failed: { title: 'Failed Jobs', sub: 'Jobs that need attention' },
+  raw: { title: 'Raw Data Viewer', sub: 'Browse raw podcast JSON data' },
+  stats: { title: 'Sync Stats', sub: 'Charts and sync performance' },
+  settings: { title: 'Settings', sub: 'System configuration' },
+};
+
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  document.querySelector(`[data-page="${page}"]`).classList.add('active');
+  const info = pageTitles[page] || { title: page, sub: '' };
+  document.getElementById('pageTitle').textContent = info.title;
+  document.getElementById('pageSub').textContent = info.sub;
+}
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => switchPage(item.dataset.page));
+});
+
+// ── Toast ──
+function toast(type, msg) {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icon = { success: 'ti-circle-check', error: 'ti-alert-circle', info: 'ti-info-circle' }[type];
+  el.innerHTML = `<i class="ti ${icon}"></i> ${msg}`;
+  const container = document.getElementById('toastContainer');
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(8px)';
+    el.style.transition = 'all 0.2s ease';
+    setTimeout(() => el.remove(), 200);
+  }, 3000);
+}
+
+// ── Init ──
+renderFeeds();
+renderLogs();
+renderFailed();
+updateCounters();
+</script>
+</body>
+</html>

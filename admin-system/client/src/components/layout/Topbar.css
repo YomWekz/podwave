@@ -1,0 +1,88 @@
+/* Topbar Styles - Extracted from admin_desktop.html */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+}
+
+.topbar-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.topbar-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-family: var(--mono);
+}
+
+.sync-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--green);
+  background: var(--green-dim);
+  padding: 5px 11px;
+  border-radius: 6px;
+  border: 0.5px solid var(--green-border);
+  font-family: var(--mono);
+}
+
+.sync-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s ease infinite;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 16px;
+    height: 54px;
+    flex-shrink: 0;
+  }
+  
+  .topbar-title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  
+  .topbar-sub {
+    font-size: 9.5px;
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+  
+  .sync-badge {
+    font-size: 10px;
+    padding: 5px 10px;
+    border-radius: 20px;
+  }
+  
+  .sync-dot {
+    width: 5px;
+    height: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0 12px;
+  }
+  
+  .sync-badge {
+    display: none; /* Hide on very small screens if needed */
+  }
+}

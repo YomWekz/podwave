@@ -1,0 +1,85 @@
+/* Delete Dialog Styles - Extracted from admin_desktop.html */
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.dialog-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.dialog {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  min-width: 280px;
+  transform: translateY(6px);
+  transition: transform 0.15s;
+}
+
+.dialog-overlay.open .dialog {
+  transform: translateY(0);
+}
+
+.dialog-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.dialog-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+  font-family: var(--mono);
+  word-break: break-all;
+}
+
+.dialog-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.dialog-btn {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.dialog-btn.cancel {
+  background: none;
+  color: var(--text-muted);
+}
+
+.dialog-btn.cancel:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.05);
+}
+
+.dialog-btn.confirm {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.dialog-btn.confirm:hover {
+  background: #c43a39;
+}

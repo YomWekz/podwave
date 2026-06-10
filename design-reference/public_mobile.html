@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PodWave</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--bg2:#13131a;--bg3:#18181f;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#ffffff;--text2:rgba(255,255,255,0.55);--text3:rgba(255,255,255,0.3);--accent:#5DCAA5;--accent-dark:#04342C;--accent-dim:rgba(93,202,165,0.15);--purple:#534AB7;--coral:#993C1D;--blue:#185FA5;--amber:#854F0B;--teal:#0F6E56;--radius:12px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%;max-width:430px;margin:0 auto;position:relative;background:var(--bg)}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden}
+.screen.active{display:flex}
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:8px}
+.scroll-area::-webkit-scrollbar{display:none}
+.status-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 6px;font-size:11px;color:var(--text3);font-weight:500;flex-shrink:0}
+.status-icons{display:flex;gap:5px;align-items:center;font-size:14px}
+.top-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 18px 10px;flex-shrink:0}
+.logo{font-size:18px;font-weight:600;color:var(--text);letter-spacing:-0.5px}
+.logo span{color:var(--accent)}
+.nav-actions{display:flex;align-items:center;gap:12px}
+.nav-icon-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:20px;cursor:pointer;border-radius:50%;transition:background 0.15s}
+.nav-icon-btn:active{background:rgba(255,255,255,0.08)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#CECBF6;cursor:pointer;flex-shrink:0}
+.search-wrap{padding:0 18px 14px;flex-shrink:0}
+.search-bar{background:var(--bg3);border-radius:var(--radius);display:flex;align-items:center;gap:10px;padding:11px 14px;border:0.5px solid var(--border)}
+.search-bar i{font-size:16px;color:var(--text3)}
+.search-bar input{background:none;border:none;outline:none;color:var(--text);font-size:13px;width:100%;font-family:inherit}
+.search-bar input::placeholder{color:var(--text3)}
+.cats-scroll{display:flex;gap:8px;padding:0 18px 18px;overflow-x:auto;flex-shrink:0}
+.cats-scroll::-webkit-scrollbar{display:none}
+.cat-pill{font-size:12px;font-weight:500;padding:7px 16px;border-radius:20px;border:0.5px solid var(--border);color:var(--text3);white-space:nowrap;flex-shrink:0;cursor:pointer;transition:all 0.15s;font-family:inherit}
+.cat-pill.active{background:var(--accent);border-color:var(--accent);color:var(--accent-dark)}
+.cat-pill:active{opacity:0.7;transform:scale(0.96)}
+.sec-head{display:flex;justify-content:space-between;align-items:center;padding:0 18px 10px}
+.sec-title{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
+.sec-more{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500}
+.feat-scroll{display:flex;gap:10px;padding:0 18px 20px;overflow-x:auto}
+.feat-scroll::-webkit-scrollbar{display:none}
+.feat-card{width:158px;flex-shrink:0;background:var(--bg2);border-radius:var(--radius);overflow:hidden;border:0.5px solid var(--border);cursor:pointer;transition:transform 0.15s,opacity 0.15s}
+.feat-card:active{transform:scale(0.97);opacity:0.8}
+.feat-thumb{height:88px;display:flex;align-items:center;justify-content:center;position:relative}
+.feat-thumb i{font-size:30px;color:rgba(255,255,255,0.22)}
+.feat-badge{position:absolute;top:7px;left:7px;font-size:9px;font-weight:600;padding:3px 7px;border-radius:5px;background:var(--accent-dim);color:var(--accent);letter-spacing:0.04em}
+.feat-body{padding:10px 10px 12px}
+.feat-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
+.feat-meta{font-size:10px;color:var(--text3)}
+.trend-list{padding:0 18px}
+.trend-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid rgba(255,255,255,0.05);cursor:pointer;transition:opacity 0.15s}
+.trend-item:last-child{border-bottom:none}
+.trend-item:active{opacity:0.7}
+.trend-num{font-size:12px;font-weight:600;color:var(--text3);width:16px;text-align:center;flex-shrink:0}
+.trend-art{width:44px;height:44px;border-radius:9px;flex-shrink:0}
+.trend-info{flex:1;min-width:0}
+.trend-title{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trend-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.trend-play{width:30px;height:30px;border-radius:50%;border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:13px;flex-shrink:0;transition:all 0.15s}
+#miniplayer{background:var(--bg2);border-top:0.5px solid var(--border);padding:10px 18px 12px;flex-shrink:0;cursor:pointer;display:none}
+#miniplayer.visible{display:block}
+.mini-inner{display:flex;align-items:center;gap:12px}
+.mini-art{width:38px;height:38px;border-radius:7px;background:var(--teal);flex-shrink:0}
+.mini-info{flex:1;min-width:0}
+.mini-title{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-pod{font-size:10px;color:var(--text3);margin-top:1px}
+.mini-controls{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mini-ctrl-btn{color:var(--text3);font-size:17px;cursor:pointer;transition:color 0.15s;display:flex;align-items:center}
+.mini-ctrl-btn:active{color:var(--text)}
+.mini-play{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--accent-dark);cursor:pointer;transition:transform 0.1s;flex-shrink:0}
+.mini-play:active{transform:scale(0.93)}
+.mini-bar{height:2px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;position:relative;overflow:hidden}
+.mini-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s linear}
+.bottom-nav{display:flex;justify-content:space-around;padding:8px 0 max(12px,env(safe-area-inset-bottom));border-top:0.5px solid var(--border);background:var(--bg);flex-shrink:0}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--text3);cursor:pointer;padding:2px 16px;transition:color 0.15s;font-weight:500;min-width:0}
+.bnav-item i{font-size:22px;transition:transform 0.15s}
+.bnav-item.active{color:var(--accent)}
+.bnav-item:active i{transform:scale(0.88)}
+.browse-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 18px 20px}
+.browse-card{border-radius:var(--radius);overflow:hidden;cursor:pointer;aspect-ratio:16/9;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;transition:transform 0.15s,opacity 0.15s;position:relative}
+.browse-card:active{transform:scale(0.97);opacity:0.85}
+.browse-card-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-size:28px;color:rgba(255,255,255,0.25)}
+.browse-card-label{font-size:13px;font-weight:600;color:#fff;position:relative;z-index:1}
+.browse-card-count{font-size:10px;color:rgba(255,255,255,0.5);position:relative;z-index:1;margin-top:2px}
+.search-screen-content{padding:0 18px}
+.result-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid rgba(255,255,255,0.05);cursor:pointer;transition:opacity 0.15s}
+.result-item:active{opacity:0.7}
+.result-info{flex:1;min-width:0}
+.result-title{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.result-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.result-type{font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 7px;border-radius:4px;flex-shrink:0;align-self:flex-start;margin-top:2px}
+.trending-searches{margin-top:4px}
+.trending-search-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:0.5px solid rgba(255,255,255,0.05);cursor:pointer;transition:opacity 0.15s}
+.trending-search-item:active{opacity:0.7}
+.trending-search-item i{font-size:16px;color:var(--text3)}
+.trending-search-item span{font-size:13px;color:var(--text2)}
+.saved-list{padding:0 18px}
+.saved-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:0.5px solid rgba(255,255,255,0.05);cursor:pointer;transition:opacity 0.15s}
+.saved-item:active{opacity:0.7}
+.saved-info{flex:1;min-width:0}
+.saved-title{font-size:13px;font-weight:500;color:var(--text)}
+.saved-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.saved-eps{font-size:11px;color:var(--accent);margin-top:3px}
+.heart-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:20px;cursor:pointer;flex-shrink:0}
+.profile-header{display:flex;flex-direction:column;align-items:center;padding:20px 18px 24px;gap:10px}
+.profile-avatar{width:70px;height:70px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#CECBF6}
+.profile-name{font-size:17px;font-weight:600;color:var(--text)}
+.profile-email{font-size:12px;color:var(--text3)}
+.profile-stats{display:flex;gap:0;padding:0 18px 20px}
+.profile-stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:14px 0;background:var(--bg2);border:0.5px solid var(--border)}
+.profile-stat:first-child{border-radius:var(--radius) 0 0 var(--radius)}
+.profile-stat:last-child{border-radius:0 var(--radius) var(--radius) 0}
+.profile-stat-num{font-size:18px;font-weight:600;color:var(--text)}
+.profile-stat-label{font-size:10px;color:var(--text3);font-weight:500}
+.settings-list{padding:0 18px}
+.settings-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:0.5px solid rgba(255,255,255,0.05);cursor:pointer;transition:opacity 0.15s}
+.settings-item:active{opacity:0.7}
+.settings-icon{width:34px;height:34px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text2);flex-shrink:0}
+.settings-label{flex:1;font-size:13px;color:var(--text);font-weight:500}
+.settings-arrow{font-size:18px;color:var(--text3)}
+#player-overlay{position:fixed;inset:0;background:var(--bg2);z-index:100;display:flex;flex-direction:column;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.32,0,0,1);max-width:430px;left:50%;margin-left:-215px}
+@media(max-width:430px){#player-overlay{left:0;margin-left:0;max-width:100%}}
+#player-overlay.open{transform:translateY(0)}
+.player-drag{display:flex;justify-content:center;padding:14px 0 8px;flex-shrink:0}
+.player-drag-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15)}
+.player-top{display:flex;align-items:center;justify-content:space-between;padding:4px 20px 16px;flex-shrink:0}
+.player-close{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--text2);cursor:pointer}
+.player-menu{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--text2);cursor:pointer}
+.player-art-wrap{display:flex;justify-content:center;padding:0 32px 28px;flex-shrink:0}
+.player-art{width:100%;aspect-ratio:1/1;border-radius:18px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:64px;color:rgba(255,255,255,0.18);max-width:280px}
+.player-meta{padding:0 24px 20px;flex-shrink:0}
+.player-title{font-size:17px;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.3}
+.player-podcast{font-size:13px;color:var(--text3)}
+.player-actions{display:flex;justify-content:flex-end;padding:0 24px 20px;gap:14px;flex-shrink:0}
+.player-action-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text3);cursor:pointer;transition:color 0.15s}
+.player-action-btn.liked{color:var(--accent)}
+.player-action-btn:active{color:var(--text)}
+.player-progress{padding:0 24px 20px;flex-shrink:0}
+.progress-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;cursor:pointer;position:relative;margin-bottom:8px}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s linear;position:relative}
+.progress-fill::after{content:'';position:absolute;right:-5px;top:-4px;width:11px;height:11px;border-radius:50%;background:var(--accent)}
+.progress-times{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.player-controls{display:flex;align-items:center;justify-content:space-between;padding:0 28px 20px;flex-shrink:0}
+.ctrl-btn{font-size:22px;color:var(--text2);cursor:pointer;display:flex;align-items:center;transition:color 0.15s}
+.ctrl-btn:active{color:var(--text)}
+.ctrl-btn.sm{font-size:18px}
+.play-pause-btn{width:60px;height:60px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--accent-dark);cursor:pointer;transition:transform 0.1s;flex-shrink:0}
+.play-pause-btn:active{transform:scale(0.94)}
+.player-footer{display:flex;align-items:center;justify-content:space-between;padding:0 24px 32px;flex-shrink:0}
+.player-footer-btn{font-size:20px;color:var(--text3);cursor:pointer;display:flex;align-items:center;transition:color 0.15s}
+.player-footer-btn:active{color:var(--text)}
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(25,25,35,0.95);color:#fff;font-size:12px;font-weight:500;padding:9px 18px;border-radius:20px;border:0.5px solid var(--border2);opacity:0;transition:opacity 0.2s,transform 0.2s;pointer-events:none;z-index:200;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.t1{background:#1D9E75}
+.t2{background:#534AB7}
+.t3{background:#993C1D}
+.t-a1{background:#185FA5}
+.t-a2{background:#854F0B}
+.t-a3{background:#3C3489}
+.t-a4{background:#0F6E56}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="status-bar"><span class="clk">9:41</span><div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="top-nav">
+    <div class="logo">pod<span>wave</span></div>
+    <div class="nav-actions">
+      <div class="nav-icon-btn" onclick="showToast('No new notifications')"><i class="ti ti-bell"></i></div>
+      <div class="avatar" onclick="goTo('profile')">JD</div>
+    </div>
+  </div>
+  <div class="scroll-area">
+    <div class="search-wrap"><div class="search-bar" onclick="goTo('search')"><i class="ti ti-search"></i><input placeholder="Search podcasts & episodes..." readonly style="cursor:pointer"></div></div>
+    <div class="cats-scroll" id="home-cats">
+      <div class="cat-pill active">All</div>
+      <div class="cat-pill">Technology</div>
+      <div class="cat-pill">Business</div>
+      <div class="cat-pill">True Crime</div>
+      <div class="cat-pill">Science</div>
+      <div class="cat-pill">Health</div>
+    </div>
+    <div class="sec-head"><span class="sec-title">Featured</span><span class="sec-more" onclick="showToast('Loading featured…')">See all</span></div>
+    <div class="feat-scroll">
+      <div class="feat-card" onclick="playPodcast('Hard Fork','Technology · 142 eps','t1','ti-radio')">
+        <div class="feat-thumb t1"><i class="ti ti-radio"></i><span class="feat-badge">Featured</span></div>
+        <div class="feat-body"><div class="feat-name">Hard Fork</div><div class="feat-meta">Technology · 142 eps</div></div>
+      </div>
+      <div class="feat-card" onclick="playPodcast('Lex Fridman','Science · 420 eps','t2','ti-brain')">
+        <div class="feat-thumb t2"><i class="ti ti-brain"></i></div>
+        <div class="feat-body"><div class="feat-name">Lex Fridman</div><div class="feat-meta">Science · 420 eps</div></div>
+      </div>
+      <div class="feat-card" onclick="playPodcast('Crime Junkie','True Crime · 310 eps','t3','ti-flame')">
+        <div class="feat-thumb t3"><i class="ti ti-flame"></i></div>
+        <div class="feat-body"><div class="feat-name">Crime Junkie</div><div class="feat-meta">True Crime · 310 eps</div></div>
+      </div>
+      <div class="feat-card" onclick="playPodcast('Planet Money','Economics · NPR','t-a4','ti-coin')">
+        <div class="feat-thumb t-a4"><i class="ti ti-coin"></i></div>
+        <div class="feat-body"><div class="feat-name">Planet Money</div><div class="feat-meta">Economics · NPR</div></div>
+      </div>
+    </div>
+    <div class="sec-head"><span class="sec-title">Trending</span><span class="sec-more" onclick="showToast('Loading trending…')">See all</span></div>
+    <div class="trend-list">
+      <div class="trend-item" onclick="playPodcast('How I Built This','Business · NPR','t-a1','ti-building')">
+        <div class="trend-num">1</div><div class="trend-art t-a1"></div>
+        <div class="trend-info"><div class="trend-title">How I Built This</div><div class="trend-sub">Business · NPR</div></div>
+        <div class="trend-play"><i class="ti ti-player-play"></i></div>
+      </div>
+      <div class="trend-item" onclick="playPodcast('The Daily','News · NYT','t-a2','ti-news')">
+        <div class="trend-num">2</div><div class="trend-art t-a2"></div>
+        <div class="trend-info"><div class="trend-title">The Daily</div><div class="trend-sub">News · NYT</div></div>
+        <div class="trend-play"><i class="ti ti-player-play"></i></div>
+      </div>
+      <div class="trend-item" onclick="playPodcast('Darknet Diaries','Technology · Independent','t-a3','ti-skull')">
+        <div class="trend-num">3</div><div class="trend-art t-a3"></div>
+        <div class="trend-info"><div class="trend-title">Darknet Diaries</div><div class="trend-sub">Technology · Independent</div></div>
+        <div class="trend-play"><i class="ti ti-player-play"></i></div>
+      </div>
+      <div class="trend-item" onclick="playPodcast('Huberman Lab','Health · Stanford','t-a4','ti-activity')">
+        <div class="trend-num">4</div><div class="trend-art t-a4"></div>
+        <div class="trend-info"><div class="trend-title">Huberman Lab</div><div class="trend-sub">Health · Stanford</div></div>
+        <div class="trend-play"><i class="ti ti-player-play"></i></div>
+      </div>
+      <div class="trend-item" onclick="playPodcast('Conan O\'Brien Needs a Friend','Comedy · Independent','t2','ti-mood-smile')">
+        <div class="trend-num">5</div><div class="trend-art" style="background:#534AB7;border-radius:9px;width:44px;height:44px;flex-shrink:0"></div>
+        <div class="trend-info"><div class="trend-title">Conan O'Brien Needs a Friend</div><div class="trend-sub">Comedy · Independent</div></div>
+        <div class="trend-play"><i class="ti ti-player-play"></i></div>
+      </div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- BROWSE -->
+<div class="screen" id="screen-browse">
+  <div class="status-bar"><span class="clk">9:41</span><div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="top-nav"><div class="logo">pod<span>wave</span></div><div class="avatar" onclick="goTo('profile')">JD</div></div>
+  <div class="scroll-area">
+    <div class="sec-head" style="padding-bottom:14px"><span class="sec-title">Browse Categories</span></div>
+    <div class="browse-grid">
+      <div class="browse-card" style="background:linear-gradient(135deg,#185FA5,#0a3a6e)" onclick="showToast('Technology · 1,240 podcasts')"><i class="ti ti-cpu browse-card-icon"></i><div class="browse-card-label">Technology</div><div class="browse-card-count">1,240 podcasts</div></div>
+      <div class="browse-card" style="background:linear-gradient(135deg,#854F0B,#4a2c06)" onclick="showToast('Business · 980 podcasts')"><i class="ti ti-briefcase browse-card-icon"></i><div class="browse-card-label">Business</div><div class="browse-card-count">980 podcasts</div></div>
+      <div class="browse-card" style="background:linear-gradient(135deg,#993C1D,#5a2210)" onclick="showToast('True Crime · 760 podcasts')"><i class="ti ti-shield browse-card-icon"></i><div class="browse-card-label">True Crime</div><div class="browse-card-count">760 podcasts</div></div>
+      <div class="browse-card" style="background:linear-gradient(135deg,#0F6E56,#073d30)" onclick="showToast('Science · 850 podcasts')"><i class="ti ti-flask browse-card-icon"></i><div class="browse-card-label">Science</div><div class="browse-card-count">850 podcasts</div></div>
+      <div class="browse-card" style="background:linear-gradient(135deg,#534AB7,#2e286e)" onclick="showToast('Health · 620 podcasts')"><i class="ti ti-heart browse-card-icon"></i><div class="browse-card-label">Health</div><div class="browse-card-count">620 podcasts</div></div>
+      <div class="browse-card" style="background:linear-gradient(135deg,#3B6D11,#1e3a08)" onclick="showToast('Education · 540 podcasts')"><i class="ti ti-school browse-card-icon"></i><div class="browse-card-label">Education</div><div class="browse-card-count">540 podcasts</div></div>
+      <div class="browse-card" style="background:linear-gradient(135deg,#993356,#5a1e33)" onclick="showToast('Comedy · 430 podcasts')"><i class="ti ti-mood-smile browse-card-icon"></i><div class="browse-card-label">Comedy</div><div class="browse-card-count">430 podcasts</div></div>
+      <div class="browse-card" style="background:linear-gradient(135deg,#5F5E5A,#2c2c2a)" onclick="showToast('News · 700 podcasts')"><i class="ti ti-news browse-card-icon"></i><div class="browse-card-label">News</div><div class="browse-card-count">700 podcasts</div></div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="screen" id="screen-search">
+  <div class="status-bar"><span class="clk">9:41</span><div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="top-nav" style="padding-bottom:4px"><div class="logo">pod<span>wave</span></div></div>
+  <div class="search-wrap" style="padding-top:4px">
+    <div class="search-bar"><i class="ti ti-search"></i><input id="search-input" placeholder="Search podcasts & episodes…" oninput="handleSearch(this.value)"><i class="ti ti-x" id="search-clear" style="font-size:16px;color:var(--text3);cursor:pointer;display:none" onclick="clearSearch()"></i></div>
+  </div>
+  <div class="scroll-area">
+    <div id="search-suggestions">
+      <div class="sec-head"><span class="sec-title">Trending Searches</span></div>
+      <div class="trending-searches search-screen-content">
+        <div class="trending-search-item" onclick="fillSearch('Lex Fridman')"><i class="ti ti-trending-up"></i><span>Lex Fridman</span></div>
+        <div class="trending-search-item" onclick="fillSearch('True Crime')"><i class="ti ti-trending-up"></i><span>True Crime</span></div>
+        <div class="trending-search-item" onclick="fillSearch('AI Podcast')"><i class="ti ti-trending-up"></i><span>AI Podcast</span></div>
+        <div class="trending-search-item" onclick="fillSearch('The Daily')"><i class="ti ti-trending-up"></i><span>The Daily</span></div>
+        <div class="trending-search-item" onclick="fillSearch('Business Tips')"><i class="ti ti-trending-up"></i><span>Business Tips</span></div>
+      </div>
+    </div>
+    <div id="search-results" style="display:none">
+      <div class="sec-head"><span class="sec-title" id="result-count">Results</span></div>
+      <div id="results-list" class="search-screen-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SAVED -->
+<div class="screen" id="screen-saved">
+  <div class="status-bar"><span class="clk">9:41</span><div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="top-nav"><div class="logo">pod<span>wave</span></div></div>
+  <div style="padding:0 18px 12px;flex-shrink:0"><span class="sec-title">Saved Podcasts</span></div>
+  <div class="scroll-area">
+    <div class="saved-list">
+      <div class="saved-item" onclick="playPodcast('Lex Fridman','Science · 420 eps','t2','ti-brain')">
+        <div style="width:52px;height:52px;border-radius:10px;background:var(--purple);flex-shrink:0"></div>
+        <div class="saved-info"><div class="saved-title">Lex Fridman Podcast</div><div class="saved-sub">Science & Technology</div><div class="saved-eps">420 episodes</div></div>
+        <div class="heart-btn" onclick="event.stopPropagation();showToast('Removed from saved')"><i class="ti ti-heart-filled"></i></div>
+      </div>
+      <div class="saved-item" onclick="playPodcast('How I Built This','Business · NPR','t-a1','ti-building')">
+        <div style="width:52px;height:52px;border-radius:10px;background:var(--blue);flex-shrink:0"></div>
+        <div class="saved-info"><div class="saved-title">How I Built This</div><div class="saved-sub">Business · NPR</div><div class="saved-eps">212 episodes</div></div>
+        <div class="heart-btn" onclick="event.stopPropagation();showToast('Removed from saved')"><i class="ti ti-heart-filled"></i></div>
+      </div>
+      <div class="saved-item" onclick="playPodcast('Huberman Lab','Health · Stanford','t-a4','ti-activity')">
+        <div style="width:52px;height:52px;border-radius:10px;background:var(--teal);flex-shrink:0"></div>
+        <div class="saved-info"><div class="saved-title">Huberman Lab</div><div class="saved-sub">Health & Science</div><div class="saved-eps">198 episodes</div></div>
+        <div class="heart-btn" onclick="event.stopPropagation();showToast('Removed from saved')"><i class="ti ti-heart-filled"></i></div>
+      </div>
+      <div class="saved-item" onclick="playPodcast('Darknet Diaries','Technology','t-a3','ti-skull')">
+        <div style="width:52px;height:52px;border-radius:10px;background:#3C3489;flex-shrink:0"></div>
+        <div class="saved-info"><div class="saved-title">Darknet Diaries</div><div class="saved-sub">Technology · Independent</div><div class="saved-eps">155 episodes</div></div>
+        <div class="heart-btn" onclick="event.stopPropagation();showToast('Removed from saved')"><i class="ti ti-heart-filled"></i></div>
+      </div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="screen-profile">
+  <div class="status-bar"><span class="clk">9:41</span><div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="top-nav"><div class="logo">pod<span>wave</span></div></div>
+  <div class="scroll-area">
+    <div class="profile-header">
+      <div class="profile-avatar">JD</div>
+      <div class="profile-name">Jamie Dela Cruz</div>
+      <div class="profile-email">jamie@example.com</div>
+    </div>
+    <div class="profile-stats">
+      <div class="profile-stat"><div class="profile-stat-num">47</div><div class="profile-stat-label">Saved</div></div>
+      <div class="profile-stat" style="border-left:none;border-right:none"><div class="profile-stat-num">312</div><div class="profile-stat-label">Listened</div></div>
+      <div class="profile-stat"><div class="profile-stat-num">8</div><div class="profile-stat-label">Reviews</div></div>
+    </div>
+    <div class="settings-list">
+      <div class="settings-item" onclick="showToast('Account settings')"><div class="settings-icon"><i class="ti ti-user"></i></div><div class="settings-label">Account</div><i class="ti ti-chevron-right settings-arrow"></i></div>
+      <div class="settings-item" onclick="showToast('Notifications')"><div class="settings-icon"><i class="ti ti-bell"></i></div><div class="settings-label">Notifications</div><i class="ti ti-chevron-right settings-arrow"></i></div>
+      <div class="settings-item" onclick="showToast('Playback settings')"><div class="settings-icon"><i class="ti ti-player-play"></i></div><div class="settings-label">Playback</div><i class="ti ti-chevron-right settings-arrow"></i></div>
+      <div class="settings-item" onclick="showToast('Downloads')"><div class="settings-icon"><i class="ti ti-download"></i></div><div class="settings-label">Downloads</div><i class="ti ti-chevron-right settings-arrow"></i></div>
+      <div class="settings-item" onclick="showToast('Privacy settings')"><div class="settings-icon"><i class="ti ti-lock"></i></div><div class="settings-label">Privacy</div><i class="ti ti-chevron-right settings-arrow"></i></div>
+      <div class="settings-item" onclick="showToast('Signing out…')"><div class="settings-icon" style="background:rgba(153,60,29,0.15)"><i class="ti ti-logout" style="color:#f0997b"></i></div><div class="settings-label" style="color:#f0997b">Sign Out</div><i class="ti ti-chevron-right settings-arrow"></i></div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- MINI PLAYER -->
+<div id="miniplayer" onclick="openPlayer()">
+  <div class="mini-inner">
+    <div class="mini-art" id="mini-art"></div>
+    <div class="mini-info">
+      <div class="mini-title" id="mini-title">The AI Episode — What comes next?</div>
+      <div class="mini-pod" id="mini-pod">Hard Fork</div>
+      <div class="mini-bar"><div class="mini-fill" id="mini-fill" style="width:35%"></div></div>
+    </div>
+    <div class="mini-controls">
+      <div class="mini-ctrl-btn" onclick="event.stopPropagation();skip(-15)"><i class="ti ti-rewind"></i></div>
+      <div class="mini-play" id="mini-play-btn" onclick="event.stopPropagation();togglePlay()"><i class="ti ti-player-pause" id="mini-play-icon"></i></div>
+      <div class="mini-ctrl-btn" onclick="event.stopPropagation();skip(15)"><i class="ti ti-fast-forward"></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="bnav-item active" id="nav-home" onclick="goTo('home')"><i class="ti ti-home"></i><span>Home</span></div>
+  <div class="bnav-item" id="nav-browse" onclick="goTo('browse')"><i class="ti ti-compass"></i><span>Browse</span></div>
+  <div class="bnav-item" id="nav-search" onclick="goTo('search')"><i class="ti ti-search"></i><span>Search</span></div>
+  <div class="bnav-item" id="nav-saved" onclick="goTo('saved')"><i class="ti ti-heart"></i><span>Saved</span></div>
+  <div class="bnav-item" id="nav-profile" onclick="goTo('profile')"><i class="ti ti-user"></i><span>Profile</span></div>
+</div>
+</div>
+
+<!-- FULL PLAYER OVERLAY -->
+<div id="player-overlay">
+  <div class="player-drag"><div class="player-drag-handle"></div></div>
+  <div class="player-top">
+    <div class="player-close" onclick="closePlayer()"><i class="ti ti-chevron-down"></i></div>
+    <span style="font-size:12px;font-weight:600;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase">Now Playing</span>
+    <div class="player-menu" onclick="showToast('More options')"><i class="ti ti-dots"></i></div>
+  </div>
+  <div class="player-art-wrap"><div class="player-art" id="player-art"><i class="ti ti-radio" id="player-art-icon"></i></div></div>
+  <div class="player-meta">
+    <div class="player-title" id="player-title">The AI Episode — What comes next?</div>
+    <div class="player-podcast" id="player-pod">Hard Fork</div>
+  </div>
+  <div class="player-actions">
+    <div class="player-action-btn" onclick="showToast('Added to queue')"><i class="ti ti-playlist-add"></i></div>
+    <div class="player-action-btn" id="like-btn" onclick="toggleLike()"><i class="ti ti-heart"></i></div>
+    <div class="player-action-btn" onclick="showToast('Link copied!')"><i class="ti ti-share"></i></div>
+  </div>
+  <div class="player-progress">
+    <div class="progress-bar" id="progress-bar" onclick="seekTo(event)"><div class="progress-fill" id="progress-fill" style="width:35%"></div></div>
+    <div class="progress-times"><span id="current-time">18:32</span><span id="total-time">52:14</span></div>
+  </div>
+  <div class="player-controls">
+    <div class="ctrl-btn sm" onclick="showToast('Shuffle on')"><i class="ti ti-arrows-shuffle"></i></div>
+    <div class="ctrl-btn" onclick="skip(-15)"><i class="ti ti-rewind-15"></i></div>
+    <div class="play-pause-btn" id="play-pause-btn" onclick="togglePlay()"><i class="ti ti-player-pause" id="play-icon"></i></div>
+    <div class="ctrl-btn" onclick="skip(15)"><i class="ti ti-forward-15"></i></div>
+    <div class="ctrl-btn sm" onclick="showToast('Repeat: one')"><i class="ti ti-repeat"></i></div>
+  </div>
+  <div class="player-footer">
+    <div class="player-footer-btn" onclick="showToast('Speed: 1.5×')"><i class="ti ti-gauge"></i></div>
+    <div class="player-footer-btn" onclick="showToast('Sleep timer: 30 min')"><i class="ti ti-moon"></i></div>
+    <div class="player-footer-btn" onclick="showToast('Downloading…')"><i class="ti ti-download"></i></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const screens=['home','browse','search','saved','profile'];
+let currentScreen='home',isPlaying=true,isLiked=false,progress=35,totalSec=3134,currentSec=1112,playInterval;
+
+function goTo(s){
+  document.querySelector('.screen.active')?.classList.remove('active');
+  document.getElementById('screen-'+s)?.classList.add('active');
+  screens.forEach(id=>document.getElementById('nav-'+id)?.classList.remove('active'));
+  document.getElementById('nav-'+s)?.classList.add('active');
+  currentScreen=s;
+  if(s==='search')setTimeout(()=>document.getElementById('search-input')?.focus(),200);
+}
+
+const bgMap={'t1':'#1D9E75','t2':'#534AB7','t3':'#993C1D','t-a1':'#185FA5','t-a2':'#854F0B','t-a3':'#3C3489','t-a4':'#0F6E56'};
+function playPodcast(name,meta,colorClass,icon){
+  const bg=bgMap[colorClass]||'#1D9E75';
+  document.getElementById('mini-title').textContent='Episode from '+name;
+  document.getElementById('mini-pod').textContent=name;
+  document.getElementById('player-title').textContent='Latest Episode — '+name;
+  document.getElementById('player-pod').textContent=name;
+  document.getElementById('mini-art').style.background=bg;
+  const pa=document.getElementById('player-art');
+  pa.style.background=bg;
+  document.getElementById('player-art-icon').className='ti '+icon;
+  isPlaying=true; updatePlayIcons();
+  document.getElementById('miniplayer').classList.add('visible');
+  currentSec=60; progress=2; updateProgress(); startProgress();
+  showToast('Now playing: '+name);
+}
+
+function openPlayer(){document.getElementById('player-overlay').classList.add('open')}
+function closePlayer(){document.getElementById('player-overlay').classList.remove('open')}
+
+function togglePlay(){
+  isPlaying=!isPlaying; updatePlayIcons();
+  if(isPlaying)startProgress(); else clearInterval(playInterval);
+}
+
+function updatePlayIcons(){
+  const ic=isPlaying?'ti-player-pause':'ti-player-play';
+  document.getElementById('play-icon').className='ti '+ic;
+  document.getElementById('mini-play-icon').className='ti '+ic;
+}
+
+function startProgress(){
+  clearInterval(playInterval);
+  playInterval=setInterval(()=>{
+    if(currentSec<totalSec){currentSec++;progress=(currentSec/totalSec)*100;updateProgress();}
+    else clearInterval(playInterval);
+  },1000);
+}
+
+function updateProgress(){
+  document.getElementById('progress-fill').style.width=progress+'%';
+  document.getElementById('mini-fill').style.width=progress+'%';
+  document.getElementById('current-time').textContent=fmt(currentSec);
+  document.getElementById('total-time').textContent=fmt(totalSec);
+}
+function fmt(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60}
+
+function skip(n){
+  currentSec=Math.max(0,Math.min(totalSec,currentSec+n));
+  progress=(currentSec/totalSec)*100; updateProgress();
+  showToast(n>0?'+'+n+'s':n+'s');
+}
+
+function seekTo(e){
+  const bar=document.getElementById('progress-bar');
+  const r=bar.getBoundingClientRect();
+  const ratio=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+  currentSec=Math.floor(ratio*totalSec); progress=ratio*100; updateProgress();
+}
+
+function toggleLike(){
+  isLiked=!isLiked;
+  const btn=document.getElementById('like-btn');
+  btn.classList.toggle('liked',isLiked);
+  btn.querySelector('i').className=isLiked?'ti ti-heart-filled':'ti ti-heart';
+  showToast(isLiked?'Added to saved':'Removed from saved');
+}
+
+const podData=[
+  {name:'Hard Fork',sub:'Technology · NYT',bg:'#1D9E75',type:'Podcast'},
+  {name:'Lex Fridman Podcast',sub:'Science & Technology',bg:'#534AB7',type:'Podcast'},
+  {name:'Crime Junkie',sub:'True Crime',bg:'#993C1D',type:'Podcast'},
+  {name:'How I Built This',sub:'Business · NPR',bg:'#185FA5',type:'Podcast'},
+  {name:'The Daily',sub:'News · NYT',bg:'#854F0B',type:'Podcast'},
+  {name:'Darknet Diaries',sub:'Technology',bg:'#3C3489',type:'Podcast'},
+  {name:'Huberman Lab',sub:'Health · Stanford',bg:'#0F6E56',type:'Podcast'},
+  {name:'Planet Money',sub:'Economics · NPR',bg:'#0F6E56',type:'Podcast'},
+  {name:'The AI Episode',sub:'Hard Fork · Ep. 142',bg:'#1D9E75',type:'Episode'},
+  {name:'Build a Billion Dollar Co.',sub:'How I Built This · Ep. 88',bg:'#185FA5',type:'Episode'},
+];
+
+function handleSearch(val){
+  document.getElementById('search-clear').style.display=val?'block':'none';
+  const sugg=document.getElementById('search-suggestions');
+  const res=document.getElementById('search-results');
+  if(!val.trim()){sugg.style.display='block';res.style.display='none';return;}
+  sugg.style.display='none'; res.style.display='block';
+  const q=val.toLowerCase();
+  const f=podData.filter(p=>p.name.toLowerCase().includes(q)||p.sub.toLowerCase().includes(q));
+  document.getElementById('result-count').textContent=f.length+' Result'+(f.length!==1?'s':'');
+  document.getElementById('results-list').innerHTML=f.map(p=>`
+    <div class="result-item" onclick="playPodcast('${p.name.replace(/'/g,"\\'")}','${p.sub}','','ti-radio')">
+      <div style="width:48px;height:48px;border-radius:9px;background:${p.bg};flex-shrink:0"></div>
+      <div class="result-info"><div class="result-title">${p.name}</div><div class="result-sub">${p.sub}</div></div>
+      <div class="result-type">${p.type}</div>
+    </div>`).join('')||`<div style="padding:40px 0;text-align:center;color:var(--text3);font-size:13px">No results for "${val}"</div>`;
+}
+
+function fillSearch(q){document.getElementById('search-input').value=q;handleSearch(q);}
+function clearSearch(){document.getElementById('search-input').value='';handleSearch('');document.getElementById('search-input').focus();}
+
+document.getElementById('home-cats').addEventListener('click',e=>{
+  const p=e.target.closest('.cat-pill');
+  if(!p)return;
+  document.querySelectorAll('#home-cats .cat-pill').forEach(x=>x.classList.remove('active'));
+  p.classList.add('active');
+});
+
+function updateClock(){
+  const n=new Date();
+  const t=n.getHours()+':'+(n.getMinutes()<10?'0':'')+n.getMinutes();
+  document.querySelectorAll('.clk').forEach(el=>el.textContent=t);
+}
+updateClock(); setInterval(updateClock,30000);
+
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+let touchStartY=0;
+const overlay=document.getElementById('player-overlay');
+overlay.addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY},{passive:true});
+overlay.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-touchStartY>70)closePlayer();},{passive:true});
+
+setTimeout(()=>{document.getElementById('miniplayer').classList.add('visible');startProgress();},500);
+</script>
+</body>
+</html>

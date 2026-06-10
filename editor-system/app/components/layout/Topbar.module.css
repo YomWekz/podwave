@@ -1,0 +1,146 @@
+/* Topbar Styles - Extracted from editor_desktop.html */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+}
+
+.topbarTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.topbarSub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-family: var(--mono);
+}
+
+.notifWrap {
+  position: relative;
+}
+
+.notifBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.28);
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  border: 0.5px solid transparent;
+  font-family: var(--mono);
+}
+
+.notifBtn:hover {
+  color: rgba(255,255,255,0.6);
+  border-color: var(--border);
+}
+
+.notifBtn i {
+  font-size: 14px;
+}
+
+.notifDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+  margin-left: 2px;
+}
+
+.notifPanel {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  width: 280px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  z-index: 50;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.notifHead {
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border2);
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.notifItem {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border2);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.notifItem:last-child {
+  border-bottom: none;
+}
+
+.notifItem:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.notifDot2 {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.notifText {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+}
+
+.notifTime {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 16px;
+    height: var(--topbar-h);
+  }
+  
+  .topbarTitle {
+    font-size: 13px;
+  }
+  
+  .topbarSub {
+    font-size: 10px;
+  }
+  
+  .notifBtn {
+    padding: 4px 8px;
+  }
+  
+  .notifPanel {
+    width: 260px;
+    right: -8px;
+  }
+}

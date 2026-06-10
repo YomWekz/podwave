@@ -1,0 +1,67 @@
+/* Raw Data Viewer Styles */
+
+.raw-data-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.raw-data-content {
+  padding: 20px;
+}
+
+.placeholder-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  gap: 10px;
+  padding: 40px;
+  text-align: center;
+}
+
+.placeholder-page i {
+  font-size: 36px;
+  opacity: 0.3;
+}
+
+.placeholder-page h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.4);
+}
+
+.placeholder-page p {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+
+.raw-preview {
+  margin-top: 20px;
+}
+
+.raw-preview-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.raw-json {
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.6;
+}

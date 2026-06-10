@@ -1,0 +1,155 @@
+/* AI Highlights Styles - Extracted from editor_desktop.html */
+
+.hlItem {
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--border2);
+  transition: all 0.3s ease;
+}
+
+.hlItem:last-child {
+  border-bottom: none;
+}
+
+.hlItem:hover {
+  background: rgba(255,255,255,0.015);
+}
+
+.hlItem.dismissed {
+  opacity: 0;
+  transform: translateX(12px);
+  pointer-events: none;
+}
+
+.hlRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.hlIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: rgba(127,119,221,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.hlContent {
+  flex: 1;
+}
+
+.hlTitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.hlSnippet {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.hlBar {
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  position: relative;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+.hlClip {
+  position: absolute;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: opacity 0.2s;
+}
+
+.hlBar:hover .hlClip {
+  opacity: 0.7;
+}
+
+.hlTimes {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+  margin-bottom: 8px;
+  font-family: var(--mono);
+}
+
+.hlBtns {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+/* Action buttons reuse qbtn styles */
+.btn {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font);
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.8);
+}
+
+.btn.accept {
+  border-color: rgba(93,202,165,0.25);
+  color: var(--green);
+}
+
+.btn.accept:hover {
+  background: var(--green-dim);
+}
+
+.btn.reject {
+  border-color: rgba(226,75,74,0.25);
+  color: var(--red);
+}
+
+.btn.reject:hover {
+  background: var(--red-dim);
+}
+
+.btn i {
+  font-size: 12px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .hlItem {
+    padding: 12px 14px;
+  }
+  
+  .hlBtns {
+    flex-wrap: wrap;
+  }
+  
+  .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}

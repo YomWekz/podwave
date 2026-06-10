@@ -1,0 +1,128 @@
+/* PodWave Editor - Global Styles */
+/* Extracted from editor_desktop.html and editor_mobile.html */
+
+/* Import fonts - MUST be at the top */
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap');
+
+/* Tabler Icons */
+@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
+
+:root {
+  /* Colors */
+  --bg: #0f0f14;
+  --surface: #1a1a22;
+  --surface2: #1f1f28;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.04);
+  --text: #f0eee8;
+  --text-muted: rgba(255,255,255,0.35);
+  --text-dim: rgba(255,255,255,0.2);
+  
+  /* Accent colors */
+  --accent: #7F77DD;
+  --accent-dim: rgba(127,119,221,0.08);
+  --accent-light: #AFA9EC;
+  
+  /* Status colors */
+  --green: #5DCAA5;
+  --green-dim: rgba(93,202,165,0.1);
+  --red: #E24B4A;
+  --red-dim: rgba(226,75,74,0.1);
+  --amber: #EF9F27;
+  --amber-dim: rgba(239,159,39,0.1);
+  --coral: #D85A30;
+  
+  /* Typography */
+  --font: 'Sora', sans-serif;
+  --mono: 'DM Mono', monospace;
+  
+  /* Spacing */
+  --radius: 8px;
+  --radius-lg: 12px;
+  --sidebar-w: 210px;
+  --topbar-h: 56px;
+  --nav-h: 64px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background-color: #09090d;
+  color: var(--text);
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes toastIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(8px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes pgIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(4px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  body {
+    min-height: 100dvh;
+  }
+}
