@@ -4,11 +4,13 @@
  * 
  * Main Page Component - Client Component with state
  * Matches editor_desktop.html and editor_mobile.html designs
+ * 
+ * API Integration: Uses real Supabase backend with mock data fallback
  */
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import Topbar from './components/layout/Topbar';
 import MobileNav from './components/layout/MobileNav';
@@ -25,6 +27,8 @@ import {
   mockKPIs,
   pageTitles 
 } from './data/mockData';
+
+import * as api from './services/api';
 
 // Panel styles (shared)
 const panelStyles = {
@@ -59,6 +63,67 @@ export default function EditorDashboard() {
   const [collections, setCollections] = useState(mockCollections);
   const [stats, setStats] = useState(mockKPIs);
   const [toasts, setToasts] = useState([]);
+  const [connectionStatus, setConnectionStatus] = useState('checking'); // 'checking' | 'connected' | 'mock'
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch data from API on mount
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  /**
+   * Fetch initial data from API
+   * Falls back to mock data if API fails
+   */
+  const fetchInitialData = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Check database health
+      const healthResult = await api.checkDbHealth();
+      const isConnected = healthResult.database === 'connected';
+      setConnectionStatus(isConnected ? 'connected' : 'mock');
+      
+      // Fetch stats
+      const statsResult = await api.getStats();
+      if (statsResult.success) {
+        setStats(statsResult.data);
+      }
+      
+      // Fetch review queue
+      const queueResult = await api.getReviewQueue(20);
+      if (queueResult.success) {
+        // Transform API data to match UI format
+        const queueData = queueResult.data.map((item, index) => ({
+          id: item.id,
+          title: item.title,
+          meta: item.meta || `${item.category || 'Uncategorized'}`,
+          artClass: item.artClass || `qa${(index % 4) + 1}`,
+          status: item.status,
+        }));
+        setQueue(queueData);
+      }
+      
+      // Fetch highlights
+      const highlightsResult = await api.getHighlights('pending', 20);
+      if (highlightsResult.success) {
+        setHighlights(highlightsResult.data);
+      }
+      
+      // Fetch collections
+      const collectionsResult = await api.getCollections();
+      if (collectionsResult.success) {
+        setCollections(collectionsResult.data);
+      }
+      
+    } catch (err) {
+      console.error('Failed to fetch initial data:', err);
+      setConnectionStatus('mock');
+      showToast('error', 'Using mock data — API unavailable');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Toast helper
   const showToast = useCallback((type, message) => {
@@ -75,9 +140,10 @@ export default function EditorDashboard() {
   };
 
   // Queue actions
-  const handleApproveQueue = (id) => {
+  const handleApproveQueue = async (id) => {
     const item = queue.find(q => q.id === id);
     if (item) {
+      // Optimistic update
       setQueue(prev => prev.map(q => 
         q.id === id ? { ...q, status: 'approved' } : q
       ));
@@ -88,12 +154,22 @@ export default function EditorDashboard() {
         published: prev.published + 1,
       }));
       showToast('success', `"${item.title}" approved & published`);
+      
+      // Call API if connected
+      if (connectionStatus === 'connected') {
+        try {
+          await api.approvePodcast(id, 'editor', 'Editor');
+        } catch (err) {
+          console.error('Approve failed:', err);
+        }
+      }
     }
   };
 
-  const handleRejectQueue = (id) => {
+  const handleRejectQueue = async (id) => {
     const item = queue.find(q => q.id === id);
     if (item) {
+      // Optimistic update
       setQueue(prev => prev.map(q => 
         q.id === id ? { ...q, status: 'rejected' } : q
       ));
@@ -103,6 +179,15 @@ export default function EditorDashboard() {
         pendingReview: Math.max(0, pendingCount),
       }));
       showToast('error', `"${item.title}" rejected`);
+      
+      // Call API if connected
+      if (connectionStatus === 'connected') {
+        try {
+          await api.rejectPodcast(id, 'editor', 'Editor');
+        } catch (err) {
+          console.error('Reject failed:', err);
+        }
+      }
     }
   };
 
@@ -110,35 +195,67 @@ export default function EditorDashboard() {
     showToast('info', `Editing "${item.title}"…`);
   };
 
-  const handleApproveAllQueue = () => {
+  const handleApproveAllQueue = async () => {
+    const pendingCount = queue.filter(q => q.status === 'pending' || q.status === 'review').length;
+    
+    // Optimistic update
     setQueue(prev => prev.map(q => 
       q.status === 'pending' || q.status === 'review' ? { ...q, status: 'approved' } : q
     ));
     setStats(prev => ({
       ...prev,
       pendingReview: 0,
-      published: prev.published + queue.filter(q => q.status === 'pending' || q.status === 'review').length,
+      published: prev.published + pendingCount,
     }));
     showToast('success', 'All pending items approved');
+    
+    // Call API if connected
+    if (connectionStatus === 'connected') {
+      try {
+        await api.approveAllPending('editor', 'Editor');
+      } catch (err) {
+        console.error('Approve all failed:', err);
+      }
+    }
   };
 
   // Highlight actions
-  const handleAcceptHighlight = (id) => {
+  const handleAcceptHighlight = async (id) => {
+    // Optimistic update
     setHighlights(prev => prev.filter(h => h.id !== id));
     setStats(prev => ({
       ...prev,
       highlightsPending: Math.max(0, prev.highlightsPending - 1),
     }));
     showToast('success', 'Highlight clip accepted');
+    
+    // Call API if connected
+    if (connectionStatus === 'connected') {
+      try {
+        await api.acceptHighlight(id, 'editor', 'Editor');
+      } catch (err) {
+        console.error('Accept highlight failed:', err);
+      }
+    }
   };
 
-  const handleRejectHighlight = (id) => {
+  const handleRejectHighlight = async (id) => {
+    // Optimistic update
     setHighlights(prev => prev.filter(h => h.id !== id));
     setStats(prev => ({
       ...prev,
       highlightsPending: Math.max(0, prev.highlightsPending - 1),
     }));
     showToast('error', 'Highlight clip rejected');
+    
+    // Call API if connected
+    if (connectionStatus === 'connected') {
+      try {
+        await api.rejectHighlight(id, 'editor', 'Editor');
+      } catch (err) {
+        console.error('Reject highlight failed:', err);
+      }
+    }
   };
 
   const handleTrimHighlight = (item) => {
@@ -152,10 +269,34 @@ export default function EditorDashboard() {
   // Collection actions
   const handleEditCollection = (col) => {
     showToast('info', `Editing "${col.title}"…`);
+    // TODO: Open edit modal
   };
 
-  const handleNewCollection = () => {
+  const handleNewCollection = async () => {
     showToast('info', 'Creating new collection…');
+    
+    // Call API if connected
+    if (connectionStatus === 'connected') {
+      try {
+        const result = await api.createCollection({
+          name: 'New Collection',
+          description: 'Edit this description',
+          status: 'draft',
+          created_by: 'editor',
+        });
+        
+        if (result.success) {
+          // Refresh collections
+          const collectionsResult = await api.getCollections();
+          if (collectionsResult.success) {
+            setCollections(collectionsResult.data);
+          }
+          showToast('success', 'Collection created');
+        }
+      } catch (err) {
+        console.error('Create collection failed:', err);
+      }
+    }
   };
 
   // Get current page title
@@ -177,7 +318,11 @@ export default function EditorDashboard() {
 
       {/* Main content */}
       <main style={styles.main}>
-        <Topbar title={pageTitle.title} subtitle={pageTitle.sub} />
+        <Topbar 
+          title={pageTitle.title} 
+          subtitle={pageTitle.sub} 
+          connectionStatus={connectionStatus} 
+        />
         
         <div style={styles.content}>
           {/* Dashboard Page */}

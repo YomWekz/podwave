@@ -123,6 +123,9 @@ import Toast from './components/Toast.vue';
 // Mock Data
 import { themeColors } from './data/mockData';
 
+// API Service
+import * as api from './services/api';
+
 // ============================================
 // STATE
 // ============================================
@@ -147,8 +150,25 @@ const currentPodcast = ref(null);
 const toastMessage = ref('');
 const toastVisible = ref(false);
 
+// API state
+const connectionStatus = ref('checking'); // 'checking' | 'connected' | 'mock'
+const isLoading = ref(true);
+
 // Refs
 const topbarRef = ref(null);
+
+// ============================================
+// API INTEGRATION
+// ============================================
+
+async function checkConnection() {
+  try {
+    const health = await api.checkDbHealth();
+    connectionStatus.value = health.database === 'connected' ? 'connected' : 'mock';
+  } catch (error) {
+    connectionStatus.value = 'mock';
+  }
+}
 
 // ============================================
 // NAVIGATION
@@ -300,8 +320,12 @@ function handleResize() {
   windowWidth.value = window.innerWidth;
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('resize', handleResize);
+  
+  // Check API connection
+  await checkConnection();
+  isLoading.value = false;
   
   // Keyboard shortcuts (desktop only)
   document.addEventListener('keydown', (e) => {

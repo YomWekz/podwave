@@ -8,14 +8,29 @@
 import { useState } from 'react';
 import styles from './Topbar.module.css';
 
-export default function Topbar({ title, subtitle }) {
+export default function Topbar({ title, subtitle, connectionStatus }) {
   const [showNotif, setShowNotif] = useState(false);
+  
+  // Connection status indicator
+  const getConnectionIndicator = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return <span className={styles.connected}>Connected to Supabase</span>;
+      case 'mock':
+        return <span className={styles.mockMode}>Using mock data</span>;
+      default:
+        return <span className={styles.checking}>Checking connection…</span>;
+    }
+  };
 
   return (
     <header className={styles.topbar}>
       <div>
         <div className={styles.topbarTitle}>{title}</div>
-        <div className={styles.topbarSub}>{subtitle}</div>
+        <div className={styles.topbarSub}>
+          {subtitle}
+          {getConnectionIndicator()}
+        </div>
       </div>
       <div className={styles.notifWrap}>
         <div 

@@ -20,6 +20,7 @@ const healthRoutes = require('./routes/health.routes');
 const feedsRoutes = require('./routes/feeds.routes');
 const jobsRoutes = require('./routes/jobs.routes');
 const statsRoutes = require('./routes/stats.routes');
+const integrationRoutes = require('./routes/integration.routes');
 
 // Import error handling
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
@@ -72,6 +73,9 @@ app.use('/api/jobs', jobsRoutes);
 
 // Statistics routes
 app.use('/api/stats', statsRoutes);
+
+// Integration routes (Admin → Editor)
+app.use('/api/integration', integrationRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

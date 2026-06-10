@@ -144,3 +144,26 @@
     right: -8px;
   }
 }
+
+
+/* Connection Status Styles */
+.connected {
+  color: var(--green);
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border2);
+}
+
+.mockMode {
+  color: var(--amber);
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border2);
+}
+
+.checking {
+  color: var(--text-dim);
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border2);
+}
