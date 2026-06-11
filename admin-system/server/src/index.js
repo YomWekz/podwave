@@ -21,9 +21,11 @@ const feedsRoutes = require('./routes/feeds.routes');
 const jobsRoutes = require('./routes/jobs.routes');
 const statsRoutes = require('./routes/stats.routes');
 const integrationRoutes = require('./routes/integration.routes');
+const authRoutes = require('./routes/auth.routes');
 
-// Import error handling
+// Import middleware
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const { requireAuth, requireRole } = require('./middleware/auth');
 
 // Create Express app
 const app = express();
@@ -62,19 +64,23 @@ app.use((req, res, next) => {
 // ROUTES
 // ============================================
 
-// Health check routes
+// Auth routes — OPEN (these are the login entry point)
+app.use('/api/auth', authRoutes);
+
+// Health check routes — OPEN (for monitoring, no auth required)
 app.use('/api/health', healthRoutes);
 
-// Feed management routes
-app.use('/api/feeds', feedsRoutes);
+// Feed management routes — PROTECTED (Admin JWT required)
+app.use('/api/feeds', requireAuth, requireRole('admin'), feedsRoutes);
 
-// Job management routes
-app.use('/api/jobs', jobsRoutes);
+// Job management routes — PROTECTED (Admin JWT required)
+app.use('/api/jobs', requireAuth, requireRole('admin'), jobsRoutes);
 
-// Statistics routes
-app.use('/api/stats', statsRoutes);
+// Statistics routes — PROTECTED (Admin JWT required)
+app.use('/api/stats', requireAuth, requireRole('admin'), statsRoutes);
 
-// Integration routes (Admin → Editor)
+// Integration routes — SERVICE TOKEN only (see integration.routes.js + serviceAuth.js)
+// These are system-to-system pipeline calls. Must NOT require user JWT.
 app.use('/api/integration', integrationRoutes);
 
 // Root endpoint
@@ -107,28 +113,33 @@ app.use(errorHandler);
 
 async function startServer() {
     try {
-        // Test database connection
+        // Start listening FIRST — server is always reachable immediately.
+        // DB check happens after so a slow/hung MySQL never blocks /api/health.
+        await new Promise((resolve, reject) => {
+            app.listen(PORT, () => {
+                console.log('');
+                console.log('╔════════════════════════════════════════╗');
+                console.log('║     PodWave Admin Server Started       ║');
+                console.log('╠════════════════════════════════════════╣');
+                console.log(`║  Port:     ${PORT.toString().padEnd(27)}║`);
+                console.log(`║  Health:   http://localhost:${PORT}/api/health ║`);
+                console.log('╚════════════════════════════════════════╝');
+                console.log('');
+                resolve();
+            }).on('error', reject);
+        });
+
+        // Test database connection AFTER server is already accepting requests.
         console.log('Connecting to MySQL database...');
         const dbConnected = await db.testConnection();
-        
+
         if (!dbConnected) {
-            console.error('⚠️  Database connection failed. Server starting anyway...');
+            console.error('⚠️  Database connection failed. Server running in degraded mode.');
             console.error('   Make sure MySQL is running and credentials are correct.');
+        } else {
+            console.log('✓ Admin server fully operational (MySQL connected)');
         }
-        
-        // Start listening
-        app.listen(PORT, () => {
-            console.log('');
-            console.log('╔════════════════════════════════════════╗');
-            console.log('║     PodWave Admin Server Started       ║');
-            console.log('╠════════════════════════════════════════╣');
-            console.log(`║  Port:     ${PORT.toString().padEnd(27)}║`);
-            console.log(`║  Health:   http://localhost:${PORT}/api/health     ║`);
-            console.log(`║  Database: ${dbConnected ? 'Connected ✓' : 'Failed ✗'}`.padEnd(41) + '║');
-            console.log('╚════════════════════════════════════════╝');
-            console.log('');
-        });
-        
+
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);

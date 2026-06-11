@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS feeds (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rss_url VARCHAR(2048) NOT NULL,
     category VARCHAR(100) DEFAULT 'General',
-    status ENUM('active', 'failed', 'pending') DEFAULT 'pending',
+    status ENUM('active', 'failed', 'pending', 'sent_to_editor') DEFAULT 'pending',
     last_sync_at DATETIME NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

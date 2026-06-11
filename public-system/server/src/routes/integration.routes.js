@@ -77,22 +77,44 @@ router.post('/receive-from-editor', async (req, res) => {
       });
     }
     
-    // Check if podcast already exists
+    // Check if podcast already exists (upsert by editorPodcastId)
     const existing = await Podcast.findOne({ editorPodcastId: body.editor_podcast_id });
     
     if (existing) {
-      // Update existing podcast
+      // Update existing podcast fields
       existing.title = body.title;
       existing.author = body.author;
       existing.description = body.description;
+      existing.imageUrl = body.image_url || existing.imageUrl;
       existing.category = body.category;
       existing.tags = body.tags || [];
       existing.episodeCount = body.episode_count || 0;
+      existing.colorClass = getColorClass(body.category);
+      existing.iconClass = getIconClass(body.category);
       await existing.save();
+      
+      // Upsert episodes — remove stale ones and reinsert from payload
+      if (body.episodes && Array.isArray(body.episodes) && body.episodes.length > 0) {
+        await Episode.deleteMany({ podcastId: existing._id });
+        for (const ep of body.episodes) {
+          const episode = new Episode({
+            podcastId: existing._id,
+            podcastName: existing.title,
+            title: ep.title,
+            description: ep.description,
+            audioUrl: ep.audio_url,
+            duration: ep.duration || 0,
+            editorEpisodeId: ep.editor_episode_id,
+            status: 'active'
+          });
+          await episode.save();
+        }
+        console.log('[Public] Upserted', body.episodes.length, 'episode(s) for:', existing.title);
+      }
       
       return res.json({
         success: true,
-        message: 'Podcast updated',
+        message: 'Podcast updated (upserted)',
         data: existing
       });
     }

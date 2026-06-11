@@ -97,13 +97,23 @@ async function remove(table, where, whereParams = []) {
 
 /**
  * Test database connection
+ * Includes a 5-second timeout so a slow/hung MySQL never blocks server startup.
  * @returns {Promise<boolean>} True if connected
  */
 async function testConnection() {
-    try {
+    const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timeout after 5s')), 5000)
+    );
+
+    const connect = async () => {
         const connection = await pool.getConnection();
         await connection.ping();
         connection.release();
+        return true;
+    };
+
+    try {
+        await Promise.race([connect(), timeout]);
         console.log('✓ MySQL database connected successfully');
         return true;
     } catch (error) {

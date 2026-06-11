@@ -1,11 +1,16 @@
 /**
  * Integration Routes - Admin to Editor Communication
  * Handles sending podcast data to the Editor system
+ *
+ * Auth: These routes use SERVICE TOKEN authentication only.
+ * They are system-to-system pipeline calls and must NOT require user JWT.
+ * This keeps the Admin→Editor→Public pipeline independent of login sessions.
  */
 
 const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const db = require('../db/connection');
+const { requireServiceToken } = require('../middleware/serviceAuth');
 
 // Editor API configuration
 const EDITOR_API_URL = process.env.EDITOR_API_URL || 'http://localhost:3002';
@@ -15,17 +20,18 @@ const ADMIN_TO_EDITOR_TOKEN = process.env.ADMIN_TO_EDITOR_SERVICE_TOKEN || 'podw
  * POST /api/integration/send-to-editor/:feedId
  * Send a podcast/feed to Editor system for review
  */
-router.post('/send-to-editor/:feedId', async (req, res) => {
+router.post('/send-to-editor/:feedId', requireServiceToken, async (req, res) => {
   const feedId = req.params.feedId;
   
   try {
     // Get feed data from database
-    const [feeds] = await db.query(
+    // NOTE: db.query() already returns the rows array directly (no [rows,fields] destructuring needed)
+    const feeds = await db.query(
       'SELECT id, rss_url, category, status, created_at FROM feeds WHERE id = ?',
       [feedId]
     );
     
-    if (feeds.length === 0) {
+    if (!Array.isArray(feeds) || feeds.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Feed not found'
@@ -35,12 +41,12 @@ router.post('/send-to-editor/:feedId', async (req, res) => {
     const feed = feeds[0];
     
     // Get podcast data if available
-    const [podcasts] = await db.query(
+    const podcasts = await db.query(
       'SELECT title, author, description, image_url, website_url FROM podcasts WHERE feed_id = ? LIMIT 1',
       [feedId]
     );
     
-    const podcastData = podcasts[0] || {};
+    const podcastData = (Array.isArray(podcasts) && podcasts[0]) || {};
     
     // Prepare data to send to Editor
     const editorPayload = {
@@ -56,6 +62,7 @@ router.post('/send-to-editor/:feedId', async (req, res) => {
     };
     
     // Try to send to Editor API
+    let editorResult = null;
     try {
       const response = await fetch(`${EDITOR_API_URL}/api/integration/receive-from-admin`, {
         method: 'POST',
@@ -66,41 +73,47 @@ router.post('/send-to-editor/:feedId', async (req, res) => {
         body: JSON.stringify(editorPayload)
       });
       
-      const result = await response.json();
+      editorResult = await response.json();
       
       if (!response.ok) {
-        console.error('Editor API error:', result);
+        console.error('Editor API error:', editorResult);
         return res.status(response.status).json({
           success: false,
-          error: result.error || 'Failed to send to Editor system',
+          error: editorResult.error || 'Failed to send to Editor system',
           editorStatus: response.status
         });
       }
-      
-      // Update feed status to indicate it was sent to Editor
-      await db.query(
-        'UPDATE feeds SET status = ? WHERE id = ?',
-        ['sent_to_editor', feedId]
-      );
-      
-      res.json({
-        success: true,
-        message: 'Podcast sent to Editor for review',
-        feedId: feedId,
-        editorResponse: result
-      });
       
     } catch (fetchError) {
       console.error('Failed to connect to Editor API:', fetchError.message);
       
       // Return error but don't break Admin functionality
-      res.status(503).json({
+      return res.status(503).json({
         success: false,
         error: 'Editor system is not available',
         details: 'Could not connect to Editor API. Please ensure Editor is running on port 3002.',
         feedId: feedId
       });
     }
+    
+    // Editor call succeeded — update feed status to 'sent_to_editor'
+    try {
+      await db.query(
+        "UPDATE feeds SET status = 'sent_to_editor' WHERE id = ?",
+        [feedId]
+      );
+    } catch (dbError) {
+      // Non-fatal: data was already sent to Editor successfully
+      // This can happen if the DB ENUM hasn't been updated yet — run the ALTER TABLE migration
+      console.warn('Could not update feed status after sending to Editor:', dbError.message);
+    }
+    
+    return res.json({
+      success: true,
+      message: 'Podcast sent to Editor for review',
+      feedId: feedId,
+      editorResponse: editorResult
+    });
     
   } catch (error) {
     console.error('Integration error:', error);
@@ -115,7 +128,7 @@ router.post('/send-to-editor/:feedId', async (req, res) => {
  * POST /api/integration/batch-send-to-editor
  * Send multiple feeds to Editor at once
  */
-router.post('/batch-send-to-editor', async (req, res) => {
+router.post('/batch-send-to-editor', requireServiceToken, async (req, res) => {
   const { feedIds } = req.body;
   
   if (!Array.isArray(feedIds) || feedIds.length === 0) {
@@ -130,12 +143,13 @@ router.post('/batch-send-to-editor', async (req, res) => {
   for (const feedId of feedIds) {
     try {
       // Get feed data
-      const [feeds] = await db.query(
+      // NOTE: db.query() already returns the rows array directly
+      const feeds = await db.query(
         'SELECT id, rss_url, category, status FROM feeds WHERE id = ?',
         [feedId]
       );
       
-      if (feeds.length === 0) {
+      if (!Array.isArray(feeds) || feeds.length === 0) {
         results.push({ feedId, success: false, error: 'Feed not found' });
         continue;
       }
@@ -191,7 +205,7 @@ router.post('/batch-send-to-editor', async (req, res) => {
  * GET /api/integration/status
  * Check Editor API connectivity
  */
-router.get('/status', async (req, res) => {
+router.get('/status', requireServiceToken, async (req, res) => {
   try {
     const response = await fetch(`${EDITOR_API_URL}/api/health`, {
       method: 'GET',
