@@ -5,9 +5,13 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, handleSupabaseError, successResponse } from '@/lib/supabase';
+import { requireEditorAuth } from '@/lib/editorAuth';
 
 // GET /api/stats
-export async function GET() {
+export async function GET(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   // If no database connection, return mock stats
   if (!supabaseAdmin) {
     return NextResponse.json({

@@ -31,6 +31,19 @@
     <!-- Spacer -->
     <div class="topbar-spacer"></div>
 
+    <!-- Auth State -->
+    <template v-if="isAuthenticated">
+      <!-- Logged In: Show User Info -->
+      <div class="user-avatar" :title="`Signed in as ${user.username}`" @click="$emit('navigate', 'profile')">
+        {{ user.initials || user.username.slice(0, 2).toUpperCase() }}
+      </div>
+    </template>
+    <template v-else>
+      <!-- Logged Out: Show Login/Signup Buttons -->
+      <button class="btn-outline" @click="$emit('show-login')">Sign In</button>
+      <button class="btn-primary" @click="$emit('show-signup')">Sign Up</button>
+    </template>
+
     <!-- Action Buttons -->
     <div class="topbar-btn" title="Notifications" @click="handleNotification">
       <i class="ti ti-bell"></i>
@@ -50,10 +63,18 @@ defineProps({
     type: String,
     default: 'home',
   },
+  isAuthenticated: {
+    type: Boolean,
+    default: false,
+  },
+  user: {
+    type: Object,
+    default: null,
+  },
 });
 
 // Emits
-const emit = defineEmits(['search', 'navigate', 'toast']);
+const emit = defineEmits(['search', 'navigate', 'toast', 'show-login', 'show-signup']);
 
 // Local state
 const searchQuery = ref('');
@@ -184,5 +205,63 @@ defineExpose({ clearSearch });
 .topbar-btn:hover {
   background: rgba(255, 255, 255, 0.07);
   color: var(--text);
+}
+
+/* Auth Buttons */
+.btn-outline {
+  padding: 8px 16px;
+  background: transparent;
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-primary {
+  padding: 8px 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 2px var(--accent-hover);
 }
 </style>

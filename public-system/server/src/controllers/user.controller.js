@@ -25,24 +25,21 @@ async function getProfile(req, res) {
   }
   
   try {
-    // For now, return first user or create mock
-    let user = await User.findOne().lean();
+    const user = await User.findById(req.user.id).lean();
     
     if (!user) {
-      return res.json({
-        success: true,
-        data: mockUser.profile,
-        source: 'mock'
-      });
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
     
     res.json({
       success: true,
       data: {
         id: user._id,
-        name: user.name,
+        username: user.username,
+        name: user.name || user.username,
         email: user.email,
-        initials: user.initials || user.name?.substring(0, 2).toUpperCase(),
+        role: user.role || 'user',
+        initials: user.initials || user.username?.substring(0, 2).toUpperCase(),
         plan: user.plan,
         stats: {
           saved: user.savedPodcasts?.length || 0,
@@ -71,7 +68,7 @@ async function getSaved(req, res) {
   }
   
   try {
-    let user = await User.findOne().populate('savedPodcasts');
+    const user = await User.findById(req.user.id).populate('savedPodcasts');
     
     if (!user || !user.savedPodcasts) {
       return res.json({
@@ -115,16 +112,10 @@ async function savePodcast(req, res) {
   }
   
   try {
-    let user = await User.findOne();
+    const user = await User.findById(req.user.id);
     
     if (!user) {
-      // Create a mock user
-      user = new User({
-        email: 'demo@podwave.io',
-        name: 'Demo User',
-        initials: 'DU',
-        plan: 'free'
-      });
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
     
     await user.savePodcast(podcastId);
@@ -160,7 +151,7 @@ async function unsavePodcast(req, res) {
   }
   
   try {
-    let user = await User.findOne();
+    const user = await User.findById(req.user.id);
     
     if (user) {
       await user.unsavePodcast(podcastId);
@@ -195,7 +186,7 @@ async function getHistory(req, res) {
   }
   
   try {
-    const user = await User.findOne()
+    const user = await User.findById(req.user.id)
       .populate('listenHistory.episodeId')
       .populate('listenHistory.podcastId');
     
@@ -233,15 +224,10 @@ async function addToHistory(req, res) {
   }
   
   try {
-    let user = await User.findOne();
+    const user = await User.findById(req.user.id);
     
     if (!user) {
-      user = new User({
-        email: 'demo@podwave.io',
-        name: 'Demo User',
-        initials: 'DU',
-        plan: 'free'
-      });
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
     
     await user.addToHistory(episodeId, podcastId, progress || 0);
@@ -284,16 +270,10 @@ async function ratePodcast(req, res) {
   }
   
   try {
-    let user = await User.findOne();
+    const user = await User.findById(req.user.id);
     
     if (!user) {
-      user = new User({
-        email: 'demo@podwave.io',
-        name: 'Demo User',
-        initials: 'DU',
-        plan: 'free'
-      });
-      await user.save();
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
     
     await user.ratePodcast(podcastId, rating);
@@ -328,7 +308,7 @@ async function getPlayerState(req, res) {
   }
   
   try {
-    const user = await User.findOne()
+    const user = await User.findById(req.user.id)
       .populate('currentEpisode.episodeId')
       .populate('currentEpisode.podcastId');
     
@@ -377,16 +357,10 @@ async function savePlayerState(req, res) {
   }
   
   try {
-    let user = await User.findOne();
+    const user = await User.findById(req.user.id);
     
     if (!user) {
-      user = new User({
-        email: 'demo@podwave.io',
-        name: 'Demo User',
-        initials: 'DU',
-        plan: 'free'
-      });
-      await user.save();
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
     
     user.currentEpisode = {

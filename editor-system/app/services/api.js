@@ -4,6 +4,8 @@
  */
 
 // Base URL for API calls (same origin since we're using Next.js API routes)
+import { clearInvalidToken, getAuthHeaders } from './auth.js';
+
 const API_BASE = '/api';
 
 /**
@@ -12,14 +14,25 @@ const API_BASE = '/api';
 async function apiFetch(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
         ...options.headers,
       },
-      ...options,
     });
     
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
+
+    if (response.status === 401) {
+      clearInvalidToken();
+      return {
+        success: false,
+        error: data.error || 'Editor session expired. Please sign in again.',
+        data: null,
+        authRequired: true,
+      };
+    }
     
     if (!response.ok) {
       console.error(`API Error (${endpoint}):`, data.error);

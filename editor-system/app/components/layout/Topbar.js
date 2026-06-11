@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import styles from './Topbar.module.css';
 
-export default function Topbar({ title, subtitle, connectionStatus }) {
+export default function Topbar({ title, subtitle, connectionStatus, onLogout }) {
   const [showNotif, setShowNotif] = useState(false);
   
   // Connection status indicator
@@ -32,7 +32,13 @@ export default function Topbar({ title, subtitle, connectionStatus }) {
           {getConnectionIndicator()}
         </div>
       </div>
-      <div className={styles.notifWrap}>
+      <div className={styles.topbarActions}>
+        <button className={styles.logoutBtn} type="button" onClick={onLogout}>
+          <i className="ti ti-logout"></i>
+          Logout
+        </button>
+
+        <div className={styles.notifWrap}>
         <div 
           className={styles.notifBtn}
           onClick={() => setShowNotif(!showNotif)}
@@ -68,6 +74,7 @@ export default function Topbar({ title, subtitle, connectionStatus }) {
             </div>
           </div>
         )}
+        </div>
       </div>
     </header>
   );

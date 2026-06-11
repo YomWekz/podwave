@@ -7,14 +7,14 @@
 import React from 'react';
 import './Topbar.css';
 
-function Topbar({ title, subtitle, isUsingMockData, isLoading }) {
+function Topbar({ title, subtitle, isUsingMockData, isLoading, onLogout }) {
   return (
     <header className="topbar">
       <div>
         <div className="topbar-title">{title}</div>
         <div className="topbar-sub">{subtitle}</div>
       </div>
-      <div>
+      <div className="topbar-actions">
         {isLoading ? (
           <div className="sync-badge loading">
             <div className="sync-dot spinning"></div>
@@ -31,6 +31,10 @@ function Topbar({ title, subtitle, isUsingMockData, isLoading }) {
             Connected to database
           </div>
         )}
+        <button className="logout-button" type="button" onClick={onLogout}>
+          <i className="ti ti-logout"></i>
+          Logout
+        </button>
       </div>
     </header>
   );

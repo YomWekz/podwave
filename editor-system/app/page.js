@@ -19,6 +19,7 @@ import ReviewQueue from './components/dashboard/ReviewQueue';
 import AIHighlights from './components/dashboard/AIHighlights';
 import Collections from './components/dashboard/Collections';
 import Toast from './components/Toast';
+import LoginPage from './components/auth/LoginPage';
 
 import { 
   mockQueue, 
@@ -29,6 +30,11 @@ import {
 } from './data/mockData';
 
 import * as api from './services/api';
+import {
+  AUTH_REQUIRED_EVENT,
+  isAuthenticated,
+  logout
+} from './services/auth';
 
 // Panel styles (shared)
 const panelStyles = {
@@ -57,6 +63,7 @@ const panelStyles = {
 
 export default function EditorDashboard() {
   // State
+  const [authenticated, setAuthenticated] = useState(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [queue, setQueue] = useState(mockQueue);
   const [highlights, setHighlights] = useState(mockHighlights);
@@ -66,10 +73,24 @@ export default function EditorDashboard() {
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'checking' | 'connected' | 'mock'
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch data from API on mount
+  // Check local Editor session on the client
   useEffect(() => {
-    fetchInitialData();
+    setAuthenticated(isAuthenticated());
   }, []);
+
+  // Return to login when an API call rejects the current JWT
+  useEffect(() => {
+    const handleAuthRequired = () => setAuthenticated(false);
+    window.addEventListener(AUTH_REQUIRED_EVENT, handleAuthRequired);
+    return () => window.removeEventListener(AUTH_REQUIRED_EVENT, handleAuthRequired);
+  }, []);
+
+  // Fetch data after login
+  useEffect(() => {
+    if (authenticated) {
+      fetchInitialData();
+    }
+  }, [authenticated]);
 
   /**
    * Fetch initial data from API
@@ -86,12 +107,14 @@ export default function EditorDashboard() {
       
       // Fetch stats
       const statsResult = await api.getStats();
+      if (statsResult.authRequired) return;
       if (statsResult.success) {
         setStats(statsResult.data);
       }
       
       // Fetch review queue
       const queueResult = await api.getReviewQueue(20);
+      if (queueResult.authRequired) return;
       if (queueResult.success) {
         // Transform API data to match UI format
         const queueData = queueResult.data.map((item, index) => ({
@@ -106,12 +129,14 @@ export default function EditorDashboard() {
       
       // Fetch highlights
       const highlightsResult = await api.getHighlights('pending', 20);
+      if (highlightsResult.authRequired) return;
       if (highlightsResult.success) {
         setHighlights(highlightsResult.data);
       }
       
       // Fetch collections
       const collectionsResult = await api.getCollections();
+      if (collectionsResult.authRequired) return;
       if (collectionsResult.success) {
         setCollections(collectionsResult.data);
       }
@@ -139,6 +164,21 @@ export default function EditorDashboard() {
     setCurrentPage(page);
   };
 
+  const handleLogin = () => {
+    setAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setAuthenticated(false);
+    setCurrentPage('dashboard');
+    setQueue(mockQueue);
+    setHighlights(mockHighlights);
+    setCollections(mockCollections);
+    setStats(mockKPIs);
+    setConnectionStatus('checking');
+  };
+
   // Queue actions
   const handleApproveQueue = async (id) => {
     const item = queue.find(q => q.id === id);
@@ -158,7 +198,8 @@ export default function EditorDashboard() {
       // Call API if connected
       if (connectionStatus === 'connected') {
         try {
-          await api.approvePodcast(id, 'editor', 'Editor');
+          const result = await api.approvePodcast(id, 'editor', 'Editor');
+          if (result.authRequired) return;
         } catch (err) {
           console.error('Approve failed:', err);
         }
@@ -183,7 +224,8 @@ export default function EditorDashboard() {
       // Call API if connected
       if (connectionStatus === 'connected') {
         try {
-          await api.rejectPodcast(id, 'editor', 'Editor');
+          const result = await api.rejectPodcast(id, 'editor', 'Editor');
+          if (result.authRequired) return;
         } catch (err) {
           console.error('Reject failed:', err);
         }
@@ -212,7 +254,8 @@ export default function EditorDashboard() {
     // Call API if connected
     if (connectionStatus === 'connected') {
       try {
-        await api.approveAllPending('editor', 'Editor');
+        const result = await api.approveAllPending('editor', 'Editor');
+        if (result.authRequired) return;
       } catch (err) {
         console.error('Approve all failed:', err);
       }
@@ -232,7 +275,8 @@ export default function EditorDashboard() {
     // Call API if connected
     if (connectionStatus === 'connected') {
       try {
-        await api.acceptHighlight(id, 'editor', 'Editor');
+        const result = await api.acceptHighlight(id, 'editor', 'Editor');
+        if (result.authRequired) return;
       } catch (err) {
         console.error('Accept highlight failed:', err);
       }
@@ -251,7 +295,8 @@ export default function EditorDashboard() {
     // Call API if connected
     if (connectionStatus === 'connected') {
       try {
-        await api.rejectHighlight(id, 'editor', 'Editor');
+        const result = await api.rejectHighlight(id, 'editor', 'Editor');
+        if (result.authRequired) return;
       } catch (err) {
         console.error('Reject highlight failed:', err);
       }
@@ -285,9 +330,12 @@ export default function EditorDashboard() {
           created_by: 'editor',
         });
         
+        if (result.authRequired) return;
+
         if (result.success) {
           // Refresh collections
           const collectionsResult = await api.getCollections();
+          if (collectionsResult.authRequired) return;
           if (collectionsResult.success) {
             setCollections(collectionsResult.data);
           }
@@ -306,6 +354,18 @@ export default function EditorDashboard() {
   const queueCount = queue.filter(q => q.status === 'pending' || q.status === 'review').length;
   const highlightsCount = highlights.length;
 
+  if (authenticated === null) {
+    return (
+      <div style={styles.authLoading}>
+        Checking Editor session...
+      </div>
+    );
+  }
+
+  if (!authenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
   return (
     <div style={styles.shell}>
       {/* Sidebar (desktop) */}
@@ -322,6 +382,7 @@ export default function EditorDashboard() {
           title={pageTitle.title} 
           subtitle={pageTitle.sub} 
           connectionStatus={connectionStatus} 
+          onLogout={handleLogout}
         />
         
         <div style={styles.content}>
@@ -534,5 +595,14 @@ const styles = {
     fontSize: '12px',
     color: 'var(--text-dim)',
     fontFamily: 'var(--mono)',
+  },
+  authLoading: {
+    minHeight: '100vh',
+    display: 'grid',
+    placeItems: 'center',
+    background: 'var(--bg)',
+    color: 'var(--text-muted)',
+    fontFamily: 'var(--mono)',
+    fontSize: '12px',
   },
 };

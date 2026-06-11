@@ -12,8 +12,12 @@
     <Sidebar
       v-if="!isMobile"
       :current-page="currentPage"
+      :is-authenticated="isAuthenticated"
+      :user="currentUser"
       @navigate="navigateTo"
       @playPodcast="playPodcast"
+      @show-login="showLoginModal = true"
+      @show-signup="showSignupModal = true"
     />
 
     <!-- Main Content Area -->
@@ -21,9 +25,13 @@
       <!-- Topbar -->
       <Topbar
         :current-page="currentPage"
+        :is-authenticated="isAuthenticated"
+        :user="currentUser"
         @search="handleSearch"
         @navigate="handleTopbarNavigation"
         @toast="showToast"
+        @show-login="showLoginModal = true"
+        @show-signup="showSignupModal = true"
         ref="topbarRef"
       />
 
@@ -52,6 +60,7 @@
       />
       <ProfilePage
         v-else-if="currentPage === 'profile'"
+        :user="currentUser"
         @settingClick="handleSettingClick"
         @toast="showToast"
       />
@@ -61,6 +70,7 @@
         @playEpisode="playEpisode"
         @toast="showToast"
         @back="navigateTo('back')"
+        @require-auth="showLoginModal = true"
       />
     </main>
 
@@ -96,6 +106,20 @@
       :visible="toastVisible"
       @hide="toastVisible = false"
     />
+
+    <!-- Auth Modals -->
+    <LoginModal
+      v-if="showLoginModal"
+      @close="showLoginModal = false"
+      @switch-to-signup="showLoginModal = false; showSignupModal = true"
+      @login-success="handleLoginSuccess"
+    />
+    <SignupModal
+      v-if="showSignupModal"
+      @close="showSignupModal = false"
+      @switch-to-login="showSignupModal = false; showLoginModal = true"
+      @signup-success="handleSignupSuccess"
+    />
   </div>
 </template>
 
@@ -117,14 +141,19 @@ import SavedPage from './components/dashboard/SavedPage.vue';
 import ProfilePage from './components/dashboard/ProfilePage.vue';
 import PodcastDetailPage from './components/dashboard/PodcastDetailPage.vue';
 
+// Auth Components
+import LoginModal from './components/auth/LoginModal.vue';
+import SignupModal from './components/auth/SignupModal.vue';
+
 // Common Components
 import Toast from './components/Toast.vue';
 
 // Mock Data
 import { themeColors } from './data/mockData';
 
-// API Service
+// Services
 import * as api from './services/api';
+import * as auth from './services/auth';
 
 // ============================================
 // STATE
@@ -133,6 +162,12 @@ import * as api from './services/api';
 // Responsive detection
 const windowWidth = ref(window.innerWidth);
 const isMobile = computed(() => windowWidth.value <= 768);
+
+// Auth state
+const isAuthenticated = ref(auth.isAuthenticated());
+const currentUser = ref(auth.getUser());
+const showLoginModal = ref(false);
+const showSignupModal = ref(false);
 
 // Navigation
 const currentPage = ref('home');
@@ -158,6 +193,40 @@ const isLoading = ref(true);
 const topbarRef = ref(null);
 
 // ============================================
+// AUTH
+// ============================================
+
+function handleLoginSuccess(user) {
+  isAuthenticated.value = true;
+  currentUser.value = user;
+  showToast(`Welcome back, ${user.username}!`);
+}
+
+function handleSignupSuccess(user) {
+  isAuthenticated.value = true;
+  currentUser.value = user;
+  showToast(`Welcome to PodWave, ${user.username}!`);
+}
+
+function handleLogout() {
+  auth.logout();
+  isAuthenticated.value = false;
+  currentUser.value = null;
+  navigateTo('home');
+  showToast('Signed out successfully');
+}
+
+function requireAuth(callback) {
+  if (!isAuthenticated.value) {
+    showLoginModal.value = true;
+    showToast('Please sign in to continue');
+    return false;
+  }
+  if (callback) callback();
+  return true;
+}
+
+// ============================================
 // API INTEGRATION
 // ============================================
 
@@ -174,7 +243,14 @@ async function checkConnection() {
 // NAVIGATION
 // ============================================
 
+const protectedPages = ['saved', 'profile'];
+
 function navigateTo(page) {
+  // Check if page requires auth
+  if (protectedPages.includes(page) && !requireAuth()) {
+    return;
+  }
+  
   if (page === 'back') {
     if (pageHistory.value.length > 1) {
       pageHistory.value.pop();
@@ -290,7 +366,7 @@ function handleUnsave(podcast) {
 
 function handleSettingClick(action) {
   if (action === 'signout') {
-    showToast('Signing out…');
+    handleLogout();
   } else {
     showToast(`${action.charAt(0).toUpperCase() + action.slice(1)} settings`);
   }
@@ -326,6 +402,24 @@ onMounted(async () => {
   // Check API connection
   await checkConnection();
   isLoading.value = false;
+  
+  // Listen for auth events
+  window.addEventListener(auth.AUTH_REQUIRED_EVENT, () => {
+    isAuthenticated.value = false;
+    currentUser.value = null;
+    showLoginModal.value = true;
+    showToast('Session expired. Please sign in again.');
+  });
+  
+  window.addEventListener(auth.AUTH_SUCCESS_EVENT, (e) => {
+    isAuthenticated.value = true;
+    currentUser.value = e.detail.user;
+  });
+  
+  window.addEventListener(auth.AUTH_LOGOUT_EVENT, () => {
+    isAuthenticated.value = false;
+    currentUser.value = null;
+  });
   
   // Keyboard shortcuts (desktop only)
   document.addEventListener('keydown', (e) => {

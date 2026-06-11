@@ -11,8 +11,20 @@ import { supabaseAdmin } from '@/lib/supabase';
 const PUBLIC_API_URL = process.env.PUBLIC_API_URL || 'http://localhost:4003';
 const EDITOR_TO_PUBLIC_TOKEN = process.env.EDITOR_TO_PUBLIC_SERVICE_TOKEN || 'podwave_editor_to_public_token_2024';
 
+function validateServiceToken(authHeader) {
+  if (!authHeader?.startsWith('Bearer ')) return false;
+  return authHeader.slice('Bearer '.length).trim() === EDITOR_TO_PUBLIC_TOKEN;
+}
+
 // POST /api/integration/publish-to-public
 export async function POST(request) {
+  if (!validateServiceToken(request.headers.get('authorization'))) {
+    return NextResponse.json({
+      success: false,
+      error: 'Unauthorized - Invalid service token'
+    }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { podcastId, force = false } = body;

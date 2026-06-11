@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, handleSupabaseError, successResponse } from '@/lib/supabase';
+import { requireEditorAuth } from '@/lib/editorAuth';
 
 /**
  * Validate collection input data
@@ -28,6 +29,9 @@ function validateCollectionData(data) {
 
 // GET /api/collections
 export async function GET(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   const url = new URL(request.url);
   const status = url.searchParams.get('status');
   const limit = parseInt(url.searchParams.get('limit') || '20');
@@ -110,6 +114,9 @@ export async function GET(request) {
 
 // POST /api/collections - Create new collection
 export async function POST(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   if (!supabaseAdmin) {
     return NextResponse.json({
       success: false,
@@ -183,6 +190,9 @@ export async function POST(request) {
 
 // PATCH /api/collections - Update collection
 export async function PATCH(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   if (!supabaseAdmin) {
     return NextResponse.json({
       success: false,
@@ -239,6 +249,9 @@ export async function PATCH(request) {
 
 // DELETE /api/collections - Delete collection
 export async function DELETE(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   if (!supabaseAdmin) {
     return NextResponse.json({
       success: false,

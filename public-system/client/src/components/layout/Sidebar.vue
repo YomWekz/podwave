@@ -44,19 +44,28 @@
       </div>
     </div>
 
-    <!-- User Profile -->
-    <div class="sidebar-avatar-row" @click="$emit('navigate', 'profile')">
-      <div class="avatar">{{ user.initials }}</div>
+    <!-- User Profile / Auth -->
+    <div v-if="isAuthenticated" class="sidebar-avatar-row" @click="$emit('navigate', 'profile')">
+      <div class="avatar">{{ user.initials || user.username.slice(0, 2).toUpperCase() }}</div>
       <div>
-        <div class="sidebar-name">{{ user.name }}</div>
-        <div class="sidebar-plan">{{ user.plan }}</div>
+        <div class="sidebar-name">{{ user.username }}</div>
+        <div class="sidebar-plan">{{ user.plan || 'Free' }}</div>
       </div>
+    </div>
+    <div v-else class="sidebar-auth-row">
+      <button class="btn-auth-primary" @click="$emit('show-signup')">
+        <i class="ti ti-user-plus"></i>
+        Sign Up
+      </button>
+      <button class="btn-auth-outline" @click="$emit('show-login')">
+        Sign In
+      </button>
     </div>
   </aside>
 </template>
 
 <script setup>
-import { sidebarLibrary, userProfile } from '../../data/mockData';
+import { sidebarLibrary } from '../../data/mockData';
 
 // Props
 defineProps({
@@ -64,10 +73,18 @@ defineProps({
     type: String,
     default: 'home',
   },
+  isAuthenticated: {
+    type: Boolean,
+    default: false,
+  },
+  user: {
+    type: Object,
+    default: null,
+  },
 });
 
 // Emits
-defineEmits(['navigate', 'playPodcast']);
+defineEmits(['navigate', 'playPodcast', 'show-login', 'show-signup']);
 
 // Navigation items
 const navItems = [
@@ -80,7 +97,6 @@ const navItems = [
 
 // Data
 const libraryPodcasts = sidebarLibrary;
-const user = userProfile;
 </script>
 
 <style scoped>
@@ -245,5 +261,61 @@ const user = userProfile;
 .sidebar-plan {
   font-size: 10px;
   color: var(--text3);
+}
+
+/* Auth Buttons */
+.sidebar-auth-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 0.5px solid var(--border);
+  flex-shrink: 0;
+}
+
+.btn-auth-primary {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-auth-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-auth-primary i {
+  font-size: 16px;
+}
+
+.btn-auth-outline {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-auth-outline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 </style>

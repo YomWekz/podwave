@@ -6,9 +6,13 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, handleSupabaseError, successResponse } from '@/lib/supabase';
+import { requireEditorAuth } from '@/lib/editorAuth';
 
 // GET /api/podcasts/review - Get podcasts pending review
 export async function GET(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   const url = new URL(request.url);
   const limit = parseInt(url.searchParams.get('limit') || '10');
   const offset = parseInt(url.searchParams.get('offset') || '0');
@@ -70,6 +74,9 @@ export async function GET(request) {
 
 // PATCH /api/podcasts/review - Approve or reject podcast
 export async function PATCH(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   if (!supabaseAdmin) {
     return NextResponse.json({
       success: false,
@@ -151,6 +158,9 @@ export async function PATCH(request) {
 
 // POST /api/podcasts/review/approve-all - Approve all pending
 export async function POST(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   if (!supabaseAdmin) {
     return NextResponse.json({
       success: false,

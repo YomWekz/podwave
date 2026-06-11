@@ -6,9 +6,13 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, handleSupabaseError, successResponse } from '@/lib/supabase';
+import { requireEditorAuth } from '@/lib/editorAuth';
 
 // GET /api/highlights
 export async function GET(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   const url = new URL(request.url);
   const status = url.searchParams.get('status') || 'pending';
   const limit = parseInt(url.searchParams.get('limit') || '10');
@@ -131,6 +135,9 @@ export async function GET(request) {
 
 // PATCH /api/highlights - Accept or reject highlight
 export async function PATCH(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   if (!supabaseAdmin) {
     return NextResponse.json({
       success: false,

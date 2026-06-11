@@ -18,6 +18,7 @@ import FailedJobs from './components/dashboard/FailedJobs';
 import RawDataViewer from './components/dashboard/RawDataViewer';
 import Toast from './components/Toast';
 import DeleteDialog from './components/DeleteDialog';
+import LoginPage from './components/auth/LoginPage';
 
 import { 
   mockFeeds, 
@@ -30,9 +31,15 @@ import {
 
 import { pageTitles } from './data/pageConfig';
 import * as api from './services/api';
+import {
+  AUTH_REQUIRED_EVENT,
+  isAuthenticated,
+  logout
+} from './services/auth';
 
 export default function App() {
   // State
+  const [authenticated, setAuthenticated] = useState(() => isAuthenticated());
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [feeds, setFeeds] = useState([]);
   const [logs, setLogs] = useState([]);
@@ -81,6 +88,10 @@ export default function App() {
       }
     } catch (error) {
       console.error('Failed to fetch feeds:', error);
+      if (!isAuthenticated()) {
+        setIsLoading(false);
+        return;
+      }
       setFeeds(mockFeeds);
       setIsUsingMockData(true);
     }
@@ -99,6 +110,10 @@ export default function App() {
       }
     } catch (error) {
       console.error('Failed to fetch logs:', error);
+      if (!isAuthenticated()) {
+        setIsLoading(false);
+        return;
+      }
       setLogs(mockLogs);
     }
     
@@ -117,6 +132,10 @@ export default function App() {
       }
     } catch (error) {
       console.error('Failed to fetch failed jobs:', error);
+      if (!isAuthenticated()) {
+        setIsLoading(false);
+        return;
+      }
       setFailedJobs(mockFailedJobs);
     }
     
@@ -136,16 +155,41 @@ export default function App() {
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
+      if (!isAuthenticated()) {
+        setIsLoading(false);
+        return;
+      }
       setStats(mockKPIs);
     }
     
     setIsLoading(false);
   }, []);
 
-  // Load data on mount
+  // Load data after login
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (authenticated) {
+      fetchData();
+    }
+  }, [authenticated, fetchData]);
+
+  // Return to login when the backend rejects the current JWT
+  useEffect(() => {
+    const handleAuthRequired = () => setAuthenticated(false);
+    window.addEventListener(AUTH_REQUIRED_EVENT, handleAuthRequired);
+    return () => window.removeEventListener(AUTH_REQUIRED_EVENT, handleAuthRequired);
+  }, []);
+
+  const handleLogin = () => {
+    setAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setAuthenticated(false);
+    setCurrentPage('dashboard');
+    setShowAddPanel(false);
+    setShowDeleteDialog(false);
+  };
 
   // Navigation handler
   const handleNavigate = (page) => {
@@ -247,6 +291,10 @@ export default function App() {
     fetchData(); // Refresh data
   };
 
+  if (!authenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
   // Get current page title
   const pageTitle = pageTitles[currentPage] || { title: 'Dashboard', sub: '' };
 
@@ -269,6 +317,7 @@ export default function App() {
           subtitle={pageTitle.sub}
           isUsingMockData={isUsingMockData}
           isLoading={isLoading}
+          onLogout={handleLogout}
         />
         
         <div style={styles.content}>

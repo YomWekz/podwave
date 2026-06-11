@@ -8,13 +8,27 @@ import {
   mockFeeds, 
   mockLogs, 
   mockFailedJobs 
-} from '../data/mockData';
+} from '../data/mockData.js';
+import { getAuthHeaders, logout } from './auth.js';
 
 // API base URL
 const API_BASE_URL = 'http://localhost:4001/api';
 
 // Check if we should use mock data (when backend is unavailable)
 let useMockData = false;
+
+class AuthenticationError extends Error {
+    constructor(message = 'Your session has expired. Please sign in again.') {
+        super(message);
+        this.name = 'AuthenticationError';
+    }
+}
+
+function rethrowAuthenticationError(error) {
+    if (error instanceof AuthenticationError) {
+        throw error;
+    }
+}
 
 /**
  * Make an API request with fallback to mock data
@@ -30,15 +44,22 @@ async function apiRequest(endpoint, options = {}) {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                ...getAuthHeaders(),
                 ...options.headers,
             },
         });
-        
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+
+        const data = await response.json().catch(() => ({}));
+
+        if (response.status === 401 && endpoint !== '/health' && endpoint !== '/health/db') {
+            logout({ notify: true });
+            throw new AuthenticationError(data.error);
         }
         
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || `API Error: ${response.status}`);
+        }
+        
         useMockData = false; // Backend is available
         return data;
     } catch (error) {
@@ -72,6 +93,7 @@ export async function getFeeds() {
     try {
         return await apiRequest('/feeds');
     } catch (error) {
+        rethrowAuthenticationError(error);
         // Return mock data
         return {
             success: true,
@@ -95,6 +117,7 @@ export async function addFeed(rssUrl, category = 'General') {
             body: JSON.stringify({ rss_url: rssUrl, category }),
         });
     } catch (error) {
+        rethrowAuthenticationError(error);
         // Simulate adding to mock data
         const newFeed = {
             id: Date.now(),
@@ -125,6 +148,7 @@ export async function deleteFeed(feedId) {
             method: 'DELETE',
         });
     } catch (error) {
+        rethrowAuthenticationError(error);
         return {
             success: true,
             message: 'Feed deleted (mock - backend unavailable)',
@@ -145,6 +169,7 @@ export async function syncFeed(feedId) {
             body: JSON.stringify({ feed_id: feedId }),
         });
     } catch (error) {
+        rethrowAuthenticationError(error);
         return {
             success: true,
             message: 'Sync job started (mock - backend unavailable)',
@@ -164,6 +189,7 @@ export async function getJobLogs(page = 1, limit = 50) {
     try {
         return await apiRequest(`/jobs/logs?page=${page}&limit=${limit}`);
     } catch (error) {
+        rethrowAuthenticationError(error);
         return {
             success: true,
             pagination: { page, limit, total: mockLogs.length, totalPages: 1 },
@@ -181,6 +207,7 @@ export async function getFailedJobs() {
     try {
         return await apiRequest('/jobs/failed');
     } catch (error) {
+        rethrowAuthenticationError(error);
         return {
             success: true,
             count: mockFailedJobs.length,
@@ -201,6 +228,7 @@ export async function retryJob(jobId) {
             method: 'POST',
         });
     } catch (error) {
+        rethrowAuthenticationError(error);
         return {
             success: true,
             message: 'Job retry initiated (mock - backend unavailable)',
@@ -217,6 +245,7 @@ export async function getStats() {
     try {
         return await apiRequest('/stats');
     } catch (error) {
+        rethrowAuthenticationError(error);
         // Calculate stats from mock data
         return {
             success: true,

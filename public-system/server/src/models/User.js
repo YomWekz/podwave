@@ -14,6 +14,13 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true
   },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    maxlength: 60
+  },
   name: {
     type: String,
     trim: true,
@@ -32,7 +39,14 @@ const userSchema = new mongoose.Schema({
   
   // Authentication
   passwordHash: {
-    type: String
+    type: String,
+    required: true,
+    select: false
+  },
+  role: {
+    type: String,
+    enum: ['user'],
+    default: 'user'
   },
   authProvider: {
     type: String,
@@ -158,13 +172,12 @@ const userSchema = new mongoose.Schema({
 });
 
 // Indexes
-userSchema.index({ email: 1 });
 userSchema.index({ savedPodcasts: 1 });
 userSchema.index({ 'listenHistory.episodeId': 1 });
 
 // Method to save a podcast
 userSchema.methods.savePodcast = function(podcastId) {
-  if (!this.savedPodcasts.includes(podcastId)) {
+  if (!this.savedPodcasts.some(id => id.equals(podcastId))) {
     this.savedPodcasts.push(podcastId);
     this.stats.totalSaved = this.savedPodcasts.length;
   }

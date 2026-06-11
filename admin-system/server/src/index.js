@@ -16,7 +16,8 @@ const helmet = require('helmet');
 const db = require('./db/connection');
 
 // Import routes
-const healthRoutes = require('./routes/health.routes');
+// Note: healthRoutes is NOT mounted here — health is handled directly
+// above all middleware via app.get() calls for guaranteed bypass.
 const feedsRoutes = require('./routes/feeds.routes');
 const jobsRoutes = require('./routes/jobs.routes');
 const statsRoutes = require('./routes/stats.routes');
@@ -30,18 +31,44 @@ const { requireAuth, requireRole } = require('./middleware/auth');
 // Create Express app
 const app = express();
 const PORT = process.env.ADMIN_PORT || 4001;
+let server;
+let shuttingDown = false;
 
 // ============================================
-// SECURITY MIDDLEWARE
+// HEALTH ROUTES — Mounted BEFORE ALL other middleware
+// Basic health does not depend on the database or authentication.
+// ============================================
+app.get('/api/health', (req, res) => {
+    res.json({ system: 'admin', status: 'ok' });
+});
+
+app.get('/api/health/db', async (req, res) => {
+    try {
+        const connected = await db.testConnection();
+        res.json({
+            system: 'admin',
+            database: connected ? 'connected' : 'disconnected',
+            status: connected ? 'ok' : 'error'
+        });
+    } catch (err) {
+        res.status(503).json({
+            system: 'admin',
+            database: 'error',
+            status: 'error',
+            message: 'Database connection failed'
+        });
+    }
+});
+
+// ============================================
+// SECURITY MIDDLEWARE (applies to all routes below)
 // ============================================
 
-// Helmet for security headers
 app.use(helmet({
-    contentSecurityPolicy: false, // Disable for API-only server
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
 }));
 
-// CORS configuration
 app.use(cors({
     origin: process.env.ADMIN_CLIENT_URL || 'http://localhost:3001',
     credentials: true,
@@ -49,38 +76,26 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Request logging (for debugging)
-app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${req.method} ${req.path}`);
-    next();
-});
 
 // ============================================
 // ROUTES
 // ============================================
 
-// Auth routes — OPEN (these are the login entry point)
+// Auth routes — OPEN (login entry point)
 app.use('/api/auth', authRoutes);
 
-// Health check routes — OPEN (for monitoring, no auth required)
-app.use('/api/health', healthRoutes);
-
-// Feed management routes — PROTECTED (Admin JWT required)
+// Feed management — PROTECTED (Admin JWT required)
 app.use('/api/feeds', requireAuth, requireRole('admin'), feedsRoutes);
 
-// Job management routes — PROTECTED (Admin JWT required)
+// Job management — PROTECTED (Admin JWT required)
 app.use('/api/jobs', requireAuth, requireRole('admin'), jobsRoutes);
 
-// Statistics routes — PROTECTED (Admin JWT required)
+// Statistics — PROTECTED (Admin JWT required)
 app.use('/api/stats', requireAuth, requireRole('admin'), statsRoutes);
 
-// Integration routes — SERVICE TOKEN only (see integration.routes.js + serviceAuth.js)
-// These are system-to-system pipeline calls. Must NOT require user JWT.
+// Integration — SERVICE TOKEN only (system-to-system pipeline, not user JWT)
 app.use('/api/integration', integrationRoutes);
 
 // Root endpoint
@@ -116,7 +131,7 @@ async function startServer() {
         // Start listening FIRST — server is always reachable immediately.
         // DB check happens after so a slow/hung MySQL never blocks /api/health.
         await new Promise((resolve, reject) => {
-            app.listen(PORT, () => {
+            server = app.listen(PORT, () => {
                 console.log('');
                 console.log('╔════════════════════════════════════════╗');
                 console.log('║     PodWave Admin Server Started       ║');
@@ -147,17 +162,24 @@ async function startServer() {
 }
 
 // Handle graceful shutdown
-process.on('SIGTERM', async () => {
-    console.log('SIGTERM received. Shutting down gracefully...');
-    await db.closePool();
-    process.exit(0);
-});
+async function shutdown(signal) {
+    if (shuttingDown) {
+        return;
+    }
 
-process.on('SIGINT', async () => {
-    console.log('SIGINT received. Shutting down gracefully...');
+    shuttingDown = true;
+    console.log(`${signal} received. Shutting down gracefully...`);
+
+    if (server) {
+        await new Promise(resolve => server.close(resolve));
+    }
+
     await db.closePool();
     process.exit(0);
-});
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 // Start the server
 startServer();

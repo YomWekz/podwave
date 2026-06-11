@@ -4,6 +4,7 @@
  */
 
 const mysql = require('mysql2/promise');
+const DB_HEALTH_TIMEOUT_MS = 4000;
 
 // Create connection pool
 const pool = mysql.createPool({
@@ -15,6 +16,7 @@ const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
+    connectTimeout: DB_HEALTH_TIMEOUT_MS,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0
 });
@@ -97,28 +99,40 @@ async function remove(table, where, whereParams = []) {
 
 /**
  * Test database connection
- * Includes a 5-second timeout so a slow/hung MySQL never blocks server startup.
+ * Finishes before the API's 5-second health-check deadline.
  * @returns {Promise<boolean>} True if connected
  */
 async function testConnection() {
-    const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timeout after 5s')), 5000)
-    );
+    let timeoutId;
 
     const connect = async () => {
-        const connection = await pool.getConnection();
-        await connection.ping();
-        connection.release();
-        return true;
+        let connection;
+
+        try {
+            connection = await pool.getConnection();
+            await connection.ping();
+            return true;
+        } finally {
+            connection?.release();
+        }
     };
 
     try {
+        const timeout = new Promise((_, reject) => {
+            timeoutId = setTimeout(
+                () => reject(new Error(`Connection timeout after ${DB_HEALTH_TIMEOUT_MS}ms`)),
+                DB_HEALTH_TIMEOUT_MS
+            );
+        });
+
         await Promise.race([connect(), timeout]);
         console.log('✓ MySQL database connected successfully');
         return true;
     } catch (error) {
         console.error('✗ MySQL connection failed:', error.message);
         return false;
+    } finally {
+        clearTimeout(timeoutId);
     }
 }
 

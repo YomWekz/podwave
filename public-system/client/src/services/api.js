@@ -4,6 +4,8 @@
  * Falls back to mock data if backend is unavailable
  */
 
+import * as auth from './auth';
+
 // API base URL
 const API_BASE_URL = 'http://localhost:4003/api';
 
@@ -18,9 +20,16 @@ async function apiRequest(endpoint, options = {}) {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...auth.getAuthHeaders(),
         ...options.headers,
       },
     });
+    
+    // Handle 401 Unauthorized - token is invalid or expired
+    if (response.status === 401) {
+      auth.clearInvalidToken();
+      throw new Error('Authentication required');
+    }
     
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);

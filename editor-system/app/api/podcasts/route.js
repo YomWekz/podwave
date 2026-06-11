@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, handleSupabaseError, successResponse } from '@/lib/supabase';
+import { requireEditorAuth } from '@/lib/editorAuth';
 
 /**
  * Validate podcast input data
@@ -50,6 +51,9 @@ function isValidUrl(string) {
 
 // GET /api/podcasts
 export async function GET(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   const url = new URL(request.url);
   const status = url.searchParams.get('status');
   const category = url.searchParams.get('category');
@@ -121,6 +125,9 @@ export async function GET(request) {
 
 // POST /api/podcasts
 export async function POST(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   if (!supabaseAdmin) {
     return NextResponse.json({
       success: false,

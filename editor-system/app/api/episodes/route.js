@@ -6,9 +6,13 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, handleSupabaseError, successResponse } from '@/lib/supabase';
+import { requireEditorAuth } from '@/lib/editorAuth';
 
 // GET /api/episodes
 export async function GET(request) {
+  const authError = requireEditorAuth(request);
+  if (authError) return authError;
+
   const url = new URL(request.url);
   const podcastId = url.searchParams.get('podcast_id');
   const status = url.searchParams.get('status');

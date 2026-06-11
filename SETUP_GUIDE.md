@@ -88,15 +88,36 @@ MYSQL_USER=root
 MYSQL_PASSWORD=
 MYSQL_DATABASE=podwave_admin
 JWT_SECRET=local_dev_secret_change_later
-EDITOR_API_URL=http://localhost:4002
+ADMIN_JWT_SECRET=replace_with_long_random_string
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=replace_with_bcrypt_hash
+JWT_EXPIRES_IN=8h
+SERVICE_TOKEN=replace_with_another_long_random_string
+EDITOR_API_URL=http://localhost:3002
 ADMIN_TO_EDITOR_SERVICE_TOKEN=local_admin_editor_token
 ```
 
-#### Editor System (.env.local)
-Create file: `editor-system/.env.local`
+Generate the admin password hash with:
+
+```powershell
+cd admin-system/server
+node -e "require('bcryptjs').hash('yourpassword',10).then(console.log)"
+```
+
+#### Editor System (.env)
+Create file: `editor-system/.env`
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_EDITOR_APP_URL=http://localhost:3002
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_server_only
+EDITOR_USERNAME=editor
+EDITOR_PASSWORD_HASH=replace_with_bcrypt_hash
+EDITOR_JWT_SECRET=replace_with_secure_editor_jwt_secret
+EDITOR_JWT_EXPIRES_IN=8h
+ADMIN_TO_EDITOR_SERVICE_TOKEN=local_admin_editor_token
+PUBLIC_API_URL=http://localhost:4003
+EDITOR_TO_PUBLIC_SERVICE_TOKEN=local_editor_public_token
 ```
 
 #### Public Backend (.env)
@@ -105,6 +126,9 @@ Create file: `public-system/server/.env`
 PUBLIC_PORT=4003
 PUBLIC_CLIENT_URL=http://localhost:3003
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/podwave_public
+PUBLIC_JWT_SECRET=replace_with_secure_public_jwt_secret
+PUBLIC_JWT_EXPIRES_IN=30d
+EDITOR_TO_PUBLIC_SERVICE_TOKEN=local_editor_public_token
 ```
 
 ### Step 4: Setup MySQL Database (Admin System)

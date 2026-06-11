@@ -11,21 +11,21 @@
         <div>
           <div class="profile-card">
             <div class="profile-card-top">
-              <div class="profile-avatar-lg">{{ user.initials }}</div>
-              <div class="profile-name">{{ user.name }}</div>
-              <div class="profile-email">{{ user.email }}</div>
+              <div class="profile-avatar-lg">{{ user?.initials || user?.username?.slice(0, 2).toUpperCase() || 'U' }}</div>
+              <div class="profile-name">{{ user?.username || user?.name || 'User' }}</div>
+              <div class="profile-email">{{ user?.email || 'email@example.com' }}</div>
             </div>
             <div class="profile-stats">
               <div class="profile-stat">
-                <div class="profile-stat-num">{{ user.stats.saved }}</div>
+                <div class="profile-stat-num">{{ user?.savedPodcasts?.length || user?.stats?.saved || 0 }}</div>
                 <div class="profile-stat-label">Saved</div>
               </div>
               <div class="profile-stat">
-                <div class="profile-stat-num">{{ user.stats.listened }}</div>
+                <div class="profile-stat-num">{{ user?.listenHistory?.length || user?.stats?.listened || 0 }}</div>
                 <div class="profile-stat-label">Listened</div>
               </div>
               <div class="profile-stat">
-                <div class="profile-stat-num">{{ user.stats.reviews }}</div>
+                <div class="profile-stat-num">{{ user?.ratings?.length || user?.stats?.reviews || 0 }}</div>
                 <div class="profile-stat-label">Reviews</div>
               </div>
             </div>
@@ -54,13 +54,16 @@
 </template>
 
 <script setup>
-import { userProfile } from '../../data/mockData';
+// Props
+defineProps({
+  user: {
+    type: Object,
+    default: null,
+  },
+});
 
 // Emits
 defineEmits(['settingClick', 'toast']);
-
-// User data
-const user = userProfile;
 
 // Settings items
 const settingsItems = [

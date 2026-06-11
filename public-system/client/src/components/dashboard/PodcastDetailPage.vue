@@ -42,16 +42,21 @@
 
       <!-- Action Buttons -->
       <div class="action-row">
-        <button :class="['follow-btn', { following: isFollowing }]" @click="toggleFollow">
-          <i :class="['ti', isFollowing ? 'ti-heart-filled' : 'ti-heart']"></i>
-          {{ isFollowing ? 'Following' : 'Follow' }}
+        <button 
+          :class="['follow-btn', { following: isFollowing, saving: isSaving }]" 
+          @click="toggleFollow"
+          :disabled="isSaving"
+        >
+          <i v-if="isSaving" class="ti ti-loader spin"></i>
+          <i v-else :class="['ti', isFollowing ? 'ti-heart-filled' : 'ti-heart']"></i>
+          {{ isSaving ? 'Saving...' : (isFollowing ? 'Saved' : 'Save') }}
         </button>
         <div class="rating-wrap">
           <div class="rating-stars">
             <i
               v-for="n in 5"
               :key="n"
-              :class="['ti', n <= userRating ? 'ti-star-filled' : 'ti-star']"
+              :class="['ti', n <= userRating ? 'ti-star-filled' : 'ti-star', { rating: isRating }]"
               @click="setRating(n)"
             ></i>
           </div>
@@ -103,8 +108,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { getPodcastDetail, themeColors } from '../../data/mockData';
+import * as api from '../../services/api';
+import * as auth from '../../services/auth';
 
 // Props
 const props = defineProps({
@@ -119,11 +126,13 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['playEpisode', 'back', 'toast', 'follow']);
+const emit = defineEmits(['playEpisode', 'back', 'toast', 'follow', 'require-auth']);
 
 // Local state
 const isFollowing = ref(false);
 const userRating = ref(0);
+const isSaving = ref(false);
+const isRating = ref(false);
 
 // Computed podcast data
 const podcast = computed(() => {
@@ -138,17 +147,104 @@ const podcast = computed(() => {
   return getPodcastDetail(props.podcastName);
 });
 
-// Toggle follow
-function toggleFollow() {
-  isFollowing.value = !isFollowing.value;
-  emit('toast', isFollowing.value ? 'Added to your library' : 'Removed from your library');
-  emit('follow', { podcast: podcast.value, following: isFollowing.value });
+// Check if podcast is saved
+async function checkSavedStatus() {
+  if (!auth.isAuthenticated() || !podcast.value) {
+    isFollowing.value = false;
+    return;
+  }
+
+  try {
+    const result = await api.getSavedPodcasts();
+    if (result.success && result.data) {
+      const podcastId = podcast.value._id || podcast.value.id;
+      isFollowing.value = result.data.some(p => (p._id || p.id) === podcastId);
+    }
+  } catch (error) {
+    console.error('Failed to check saved status:', error);
+  }
+}
+
+// Toggle follow/save
+async function toggleFollow() {
+  // Check if user is authenticated
+  if (!auth.isAuthenticated()) {
+    emit('require-auth');
+    emit('toast', 'Please sign in to save podcasts');
+    return;
+  }
+
+  const podcastId = podcast.value._id || podcast.value.id;
+  if (!podcastId) {
+    emit('toast', 'Unable to save podcast');
+    return;
+  }
+
+  isSaving.value = true;
+
+  try {
+    if (isFollowing.value) {
+      // Unsave
+      const result = await api.unsavePodcast(podcastId);
+      if (result.success) {
+        isFollowing.value = false;
+        emit('toast', 'Removed from your library');
+        emit('follow', { podcast: podcast.value, following: false });
+      } else {
+        emit('toast', result.error || 'Failed to unsave podcast');
+      }
+    } else {
+      // Save
+      const result = await api.savePodcast(podcastId);
+      if (result.success) {
+        isFollowing.value = true;
+        emit('toast', 'Added to your library');
+        emit('follow', { podcast: podcast.value, following: true });
+      } else {
+        emit('toast', result.error || 'Failed to save podcast');
+      }
+    }
+  } catch (error) {
+    console.error('Failed to toggle save:', error);
+    emit('toast', 'An error occurred');
+  } finally {
+    isSaving.value = false;
+  }
 }
 
 // Set rating
-function setRating(n) {
+async function setRating(n) {
+  // Check if user is authenticated
+  if (!auth.isAuthenticated()) {
+    emit('require-auth');
+    emit('toast', 'Please sign in to rate podcasts');
+    return;
+  }
+
+  const podcastId = podcast.value._id || podcast.value.id;
+  if (!podcastId) {
+    emit('toast', 'Unable to rate podcast');
+    return;
+  }
+
+  isRating.value = true;
   userRating.value = n;
-  emit('toast', `Rated ${n} star${n !== 1 ? 's' : ''}`);
+
+  try {
+    const result = await api.ratePodcast(podcastId, n);
+    if (result.success) {
+      emit('toast', `Rated ${n} star${n !== 1 ? 's' : ''}`);
+    } else {
+      emit('toast', result.error || 'Failed to rate podcast');
+      userRating.value = 0; // Reset on failure
+    }
+  } catch (error) {
+    console.error('Failed to rate podcast:', error);
+    emit('toast', 'Failed to rate podcast');
+    userRating.value = 0; // Reset on failure
+  } finally {
+    isRating.value = false;
+  }
 }
 
 // Play episode
@@ -157,6 +253,25 @@ function playEpisode(episode) {
     episode,
     podcast: podcast.value,
   });
+
+  // Track listen history if authenticated
+  if (auth.isAuthenticated()) {
+    trackListenHistory(episode);
+  }
+}
+
+// Track listen history
+async function trackListenHistory(episode) {
+  try {
+    const episodeId = episode._id || episode.id;
+    const podcastId = podcast.value._id || podcast.value.id;
+    
+    if (episodeId && podcastId) {
+      await api.addToHistory(episodeId, podcastId, 0);
+    }
+  } catch (error) {
+    console.error('Failed to track listen history:', error);
+  }
 }
 
 // Handle share
@@ -171,6 +286,16 @@ function formatCount(count) {
   }
   return count || 0;
 }
+
+// Lifecycle
+onMounted(() => {
+  checkSavedStatus();
+});
+
+// Watch for podcast changes
+watch(() => podcast.value, () => {
+  checkSavedStatus();
+});
 </script>
 
 <style scoped>
@@ -341,6 +466,26 @@ function formatCount(count) {
   transform: scale(1.02);
 }
 
+.follow-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.follow-btn.saving {
+  opacity: 0.8;
+}
+
+.follow-btn .spin {
+  font-size: 14px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .follow-btn.following {
   background: var(--accent-dim);
   color: var(--accent);
@@ -371,6 +516,11 @@ function formatCount(count) {
 
 .rating-stars i:hover {
   transform: scale(1.1);
+}
+
+.rating-stars i.rating {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .rating-stars i.ti-star-filled {
